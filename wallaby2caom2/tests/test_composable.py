@@ -72,7 +72,7 @@ import test_main_app
 
 from mock import Mock, patch
 
-from blank2caom2 import composable, BlankName, COLLECTION
+from wallaby2caom2 import composable, WallabyName, COLLECTION
 
 
 def test_run_by_state():
@@ -93,7 +93,7 @@ def test_run(run_mock):
         args, kwargs = run_mock.call_args
         test_storage = args[0]
         assert isinstance(
-            test_storage, BlankName
+            test_storage, WallabyName
         ), type(test_storage)
         assert test_storage.obs_id == test_obs_id, 'wrong obs id'
         assert test_storage.file_name == test_f_name, 'wrong file name'

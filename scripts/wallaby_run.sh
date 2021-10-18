@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COLLECTION="blank"
+COLLECTION="wallaby"
 IMAGE="opencadc/${COLLECTION}2caom2"
 
 echo "Get a proxy certificate"

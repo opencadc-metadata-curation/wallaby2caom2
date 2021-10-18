@@ -84,9 +84,9 @@ from caom2pipe import manage_composable as mc
 
 
 __all__ = [
-    'blank_main_app', 
+    'wallaby_main_app', 
     'update', 
-    'BlankName', 
+    'WallabyName', 
     'COLLECTION',
     'APPLICATION', 
     'ARCHIVE', 
@@ -94,27 +94,27 @@ __all__ = [
 ]
 
 
-APPLICATION = 'blank2caom2'
-COLLECTION = 'BLANK'
-ARCHIVE = 'BLANK'
+APPLICATION = 'wallaby2caom2'
+COLLECTION = 'WALLABY'
+ARCHIVE = 'WALLABY'
 
 
-class BlankName(mc.StorageName):
+class WallabyName(mc.StorageName):
     """Naming rules:
     - support mixed-case file name storage, and mixed-case obs id values
     - support uncompressed files in storage
     """
 
-    BLANK_NAME_PATTERN = '*'
+    WALLABY_NAME_PATTERN = '*'
 
     def __init__(
         self, obs_id=None, fname_on_disk=None, file_name=None, entry=None
     ):
         self.fname_in_ad = file_name
-        super(BlankName, self).__init__(
+        super(WallabyName, self).__init__(
             obs_id, 
             COLLECTION, 
-            BlankName.BLANK_NAME_PATTERN, 
+            WallabyName.WALLABY_NAME_PATTERN, 
             fname_on_disk=file_name, 
             entry=entry,
         )
@@ -155,12 +155,12 @@ def update(observation, **kwargs):
     headers = kwargs.get('headers')
     fqn = kwargs.get('fqn')
     uri = kwargs.get('uri')
-    blank_name = None
+    wallaby_name = None
     if uri is not None:
-        blank_name = BlankName(artifact_uri=uri)
+        wallaby_name = WallabyName(artifact_uri=uri)
     if fqn is not None:
-        blank_name = BlankName(file_name=os.path.basename(fqn))
-    if blank_name is None:
+        wallaby_name = WallabyName(file_name=os.path.basename(fqn))
+    if wallaby_name is None:
         raise mc.CadcException(
             f'Need one of fqn or uri defined for '
             f'{observation.observation_id}'
@@ -195,7 +195,7 @@ def _get_uris(args):
     result = []
     if args.local:
         for ii in args.local:
-            result.append(BlankName(file_name=os.path.basename(ii)).file_uri)
+            result.append(WallabyName(file_name=os.path.basename(ii)).file_uri)
     elif args.lineage:
         for ii in args.lineage:
             ignore_product_id, artifact_uri = mc.decompose_lineage(ii)
@@ -217,7 +217,7 @@ def to_caom2():
     return result
            
 
-def blank_main_app():
+def wallaby_main_app():
     args = get_gen_proc_arg_parser().parse_args()
     try:
         result = to_caom2()

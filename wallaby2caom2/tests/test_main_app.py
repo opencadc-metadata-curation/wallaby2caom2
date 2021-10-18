@@ -69,8 +69,8 @@
 
 from mock import patch
 
-from blank2caom2 import main_app, APPLICATION, COLLECTION, BlankName
-from blank2caom2 import ARCHIVE
+from wallaby2caom2 import main_app, APPLICATION, COLLECTION, WallabyName
+from wallaby2caom2 import ARCHIVE
 from caom2pipe import manage_composable as mc
 
 import glob
@@ -92,8 +92,8 @@ def test_main_app(data_client_mock, test_name):
     basename = os.path.basename(test_name)
     extension = '.fz'
     file_name = basename.replace('.header', extension)
-    blank_name = BlankName(file_name=file_name)
-    obs_path = f'{TEST_DATA_DIR}/{blank_name.obs_id}.expected.xml'
+    wallaby_name = WallabyName(file_name=file_name)
+    obs_path = f'{TEST_DATA_DIR}/{wallaby_name.obs_id}.expected.xml'
     output_file = f'{TEST_DATA_DIR}/{basename}.actual.xml'
 
     if os.path.exists(output_file):
@@ -105,9 +105,9 @@ def test_main_app(data_client_mock, test_name):
 
     sys.argv = (
         f'{APPLICATION} --no_validate '
-        f'--local {local} --observation {COLLECTION} {blank_name.obs_id} -o '
+        f'--local {local} --observation {COLLECTION} {wallaby_name.obs_id} -o '
         f'{output_file} --plugin {PLUGIN} --module {PLUGIN} --lineage '
-        f'{blank_name.lineage}'
+        f'{wallaby_name.lineage}'
     ).split()
     print(sys.argv)
     try:

@@ -66,8 +66,8 @@
 #
 # ***********************************************************************
 #
-from blank2caom2 import BlankName
+from wallaby2caom2 import WallabyName
 
 
 def test_is_valid():
-    assert BlankName('anything').is_valid()
+    assert WallabyName('anything').is_valid()
