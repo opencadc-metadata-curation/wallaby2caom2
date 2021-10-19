@@ -11,6 +11,12 @@ In an empty directory:
 `scripts` directory, find the files 
 `docker-entrypoint.sh`, and `config.yml`. Copy these files to the working directory.
 
+   ```
+   wget https://raw.github.com/opencadc/wallaby2caom2/main/Dockerfile
+   wget https://raw.github.com/opencadc/wallaby2caom2/main/scripts/docker-entrypoint.sh
+   wget https://raw.github.com/opencadc/wallaby2caom2/main/scripts/config.yml
+   ```
+
 1. Make `docker-entrypoint.sh` executable.
 
 1. `config.yml` is configuration information for the ingestion. It will work with
