@@ -68,7 +68,7 @@
 #
 
 from caom2pipe import name_builder_composable as nbc
-from vlass2caom2 import storage_name as sn
+from wallaby2caom2 import storage_name as sn
 
 
 def test_storage_name():

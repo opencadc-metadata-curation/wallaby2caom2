@@ -68,7 +68,7 @@
 #
 
 from caom2pipe import manage_composable as mc
-from vlass2caom2 import preview_augmentation, cleanup_augmentation
+from wallaby2caom2 import preview_augmentation, cleanup_augmentation
 from vlass2caom2 import storage_name as sn
 
 from mock import patch

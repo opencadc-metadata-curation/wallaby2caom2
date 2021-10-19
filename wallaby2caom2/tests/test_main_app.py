@@ -70,7 +70,7 @@
 
 from cadcdata import FileInfo
 from caom2pipe import manage_composable as mc
-from vlass2caom2 import to_caom2, VlassName
+from wallaby2caom2 import to_caom2, VlassName
 from caom2.diff import get_differences
 from caom2utils import data_util
 
@@ -170,7 +170,7 @@ def test_main_app(data_client_mock, local_headers_mock, test_files):
     local = _get_local(test_files[1:])
 
     sys.argv = (
-        f'vlass2caom2 --local {local} {input_param} -o {output_file} '
+        f'wallaby2caom2 --local {local} {input_param} -o {output_file} '
         f'--plugin {PLUGIN} --module {PLUGIN} --lineage {lineage}'
     ).split()
     print(sys.argv)

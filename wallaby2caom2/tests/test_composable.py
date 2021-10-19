@@ -126,7 +126,7 @@ def test_run(
             os.unlink(test_config.work_fqn)
 
 
-@patch('vlass2caom2.to_caom2')
+@patch('wallaby2caom2.to_caom2')
 @patch('caom2pipe.manage_composable.query_endpoint_session')
 @patch('caom2pipe.client_composable.CAOM2RepoClient')
 @patch('caom2pipe.client_composable.StorageClientWrapper')

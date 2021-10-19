@@ -69,7 +69,7 @@
 
 from datetime import datetime
 
-from vlass2caom2 import data_source as ds
+from wallaby2caom2 import data_source as ds
 
 
 def test_get_time_box_work():
