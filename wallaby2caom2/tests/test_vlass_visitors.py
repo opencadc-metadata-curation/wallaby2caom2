@@ -103,7 +103,7 @@ def test_aug_visit_position_bounds():
                     test_input_file)
     test_file = os.path.join(TEST_DATA_DIR, 'fpf_start_obs.xml')
     test_obs = mc.read_obs_from_file(test_file)
-    test_storage_name = sn.VlassName(test_input_file)
+    test_storage_name = sn.WallabyName(test_input_file)
     kwargs = {'working_directory': '/test_files',
               'storage_name': test_storage_name,
               'log_file_directory': os.path.join(TEST_DATA_DIR, 'logs')}
