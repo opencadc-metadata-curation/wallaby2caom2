@@ -76,9 +76,9 @@ from mock import Mock, patch
 from caom2 import Status
 from caom2pipe import manage_composable as mc
 
-from vlass2caom2 import time_bounds_augmentation, quality_augmentation
-from vlass2caom2 import position_bounds_augmentation, scrape
-from vlass2caom2 import storage_name as sn
+from wallaby2caom2 import time_bounds_augmentation, quality_augmentation
+from wallaby2caom2 import position_bounds_augmentation, scrape
+from wallaby2caom2 import storage_name as sn
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_DATA_DIR = os.path.join(THIS_DIR, 'data')

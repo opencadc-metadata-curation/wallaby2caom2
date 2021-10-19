@@ -3,7 +3,7 @@
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 #
-#  (c) 2018.                            (c) 2018.
+#  (c) 2021.                            (c) 2021.
 #  Government of Canada                 Gouvernement du Canada
 #  National Research Council            Conseil national de recherches
 #  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -62,48 +62,56 @@
 #  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
 #                                       <http://www.gnu.org/licenses/>.
 #
-#  $Revision: 4 $
+#  : 4 $
 #
 # ***********************************************************************
 #
 
 import logging
 
-from caom2 import Observation, Requirements, Status
 from caom2pipe import manage_composable as mc
-from wallaby2caom2 import metadata
-
-START_DATE = '2019-01-01'
-
-
-def visit(observation, **kwargs):
-    mc.check_param(observation, Observation)
-
-    # conversation with JJK, PD 2018-08-27 - use the observation-level
-    # data quality flag.
-    #
-    # There's no header information, so get the list of QA rejected files
-    # from URLs that look like this:
-    #
-    # https://archive-new.nrao.edu/vlass/quicklook/VLASS*/QA_REJECTED/#
-    #
-    # and compare against that list. The list gets items added/removed over
-    # time.
-
-    count = 0
-    original = observation.requirements
-    if metadata.cache.is_qa_rejected(observation.observation_id):
-        observation.requirements = Requirements(Status.FAIL)
-    else:
-        observation.requirements = None
-    if observation.requirements != original:
-        logging.warning(f'Changed requirements to {observation.requirements} '
-                        f'for {observation.observation_id}.')
-        count = 1
-    logging.info(
-        f'Completed quality augmentation for {observation.observation_id}')
-    return {'observations': count}
+from datetime import datetime, timezone
+from dateutil import tz
+from wallaby2caom2 import scrape
+from wallaby2caom2 import storage_name as sn
 
 
-def _set_failed(observation):
-    observation.requirements = Requirements(Status.FAIL)
+class VLASSCache(object):
+    def __init__(self):
+        # if None, refresh the cache
+        self._refresh_bookmark = None
+        self._qa_rejected_obs_ids = []
+        self._tz = tz.gettz('US/Socorro')
+        self._new_bookmark = datetime.now(tz=timezone.utc)
+        self._logger = logging.getLogger(__class__.__name__)
+
+    def _refresh(self):
+        start_date = self._refresh_bookmark
+        if self._refresh_bookmark is None:
+            start_date = datetime(year=2017, month=1, day=1, hour=0,
+                                  tzinfo=self._tz)
+        session = mc.get_endpoint_session()
+        todo_list, ignore_max_date = scrape.build_qa_rejected_todo(
+            start_date, session
+        )
+
+        for timestamp, urls in todo_list.items():
+            for url in urls:
+                # there are trailing slashes on the NRAO VLASS QL page
+                obs_id = sn.VlassName.get_obs_id_from_file_name(
+                    url.split('/')[-2])
+                self._logger.debug(f'Add QA REJECTED {obs_id}.')
+                self._qa_rejected_obs_ids.append(obs_id)
+        self._refresh_bookmark = self._new_bookmark
+
+    def is_qa_rejected(self, obs_id):
+        # if the cache has not been updated this run refresh the cache
+        if self._refresh_bookmark is None:
+            self._logger.info('Refresh QA REJECTED cache.')
+            self._refresh()
+
+        # check the cache
+        return obs_id in self._qa_rejected_obs_ids
+
+
+cache = VLASSCache()

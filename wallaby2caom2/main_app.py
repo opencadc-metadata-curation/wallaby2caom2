@@ -75,7 +75,7 @@ from caom2 import ProductType, TypedOrderedDict, Part
 from caom2pipe import astro_composable as ac
 from caom2pipe.caom_composable import TelescopeMapping
 from caom2pipe import manage_composable as mc
-from vlass2caom2 import storage_name as sn
+from wallaby2caom2 import storage_name as sn
 
 
 __all__ = ['DR2', 'Telescope']
