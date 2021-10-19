@@ -3,7 +3,7 @@
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 #
-#  (c) 2019.                            (c) 2019.
+#  (c) 2018.                            (c) 2018.
 #  Government of Canada                 Gouvernement du Canada
 #  National Research Council            Conseil national de recherches
 #  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -67,82 +67,97 @@
 # ***********************************************************************
 #
 
-from caom2pipe import name_builder_composable as nbc
-from vlass2caom2 import storage_name as sn
+import logging
+
+from caom2 import Observation, RefCoord, CoordBounds1D, CoordRange1D
+from caom2 import TemporalWCS, CoordAxis1D, Axis
+from caom2pipe import astro_composable as ac
+from caom2pipe import manage_composable as mc
+
+from vlass2caom2 import scrape
+
+obs_metadata = None
 
 
-def test_storage_name():
-    test_bit = (
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1.I.iter1.image.pbcor.tt0'
-    )
-    test_url = (
-        f'https://archive-new.nrao.edu/vlass/quicklook/VLASS1.2/T23t09/'
-        f'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1/{test_bit}.subim.fits'
-    )
-    ts1 = sn.VlassName(test_url)
-    ts2 = sn.VlassName(f'{test_bit}.subim.fits')
-    for ts in [ts1, ts2]:
-        assert ts.obs_id == 'VLASS1.2.T23t09.J083851+483000', 'wrong obs id'
-        assert ts.file_name == f'{test_bit}.subim.fits', 'wrong fname'
-        assert ts.file_id == f'{test_bit}.subim', 'wrong fid'
-        assert (
-            ts.file_uri == f'{sn.SCHEME}:VLASS/{test_bit}.subim.fits'
-        ), 'wrong uri'
-        assert (
-            ts.model_file_name == 'VLASS1.2.T23t09.J083851+483000.xml'
-        ), 'wrong model name'
-        assert (
-            ts.log_file == 'VLASS1.2.T23t09.J083851+483000.log'
-        ), 'wrong log file'
-        assert (
-            sn.VlassName.remove_extensions(ts.file_name) == f'{test_bit}.subim'
-        ), 'wrong extensions'
-        assert ts.epoch == 'VLASS1.2', 'wrong epoch'
-        assert (
-            ts.tile_url == 'https://archive-new.nrao.edu/vlass/quicklook/'
-            'VLASS1.2/T23t09/'
-        ), 'wrong tile url'
-        assert (
-            ts.rejected_url == 'https://archive-new.nrao.edu/vlass/'
-            'quicklook/VLASS1.2/QA_REJECTED/'
-        ), 'wrong rejected url'
-        assert (
-            ts.image_pointing_url == 'https://archive-new.nrao.edu/vlass/'
-            'quicklook/VLASS1.2/T23t09/VLASS1.2.ql.'
-            'T23t09.J083851+483000.10.2048.v1/'
-        ), 'wrong image pointing url'
-        assert ts.prev == f'{test_bit}.subim_prev.jpg', 'wrong preview'
-        assert ts.thumb == f'{test_bit}.subim_prev_256.jpg', 'wrong thumbnail'
-        assert (
-            ts.prev_uri == f'{sn.CADC_SCHEME}:{sn.COLLECTION}/'
-                           f'{test_bit}.subim_prev.jpg'
-        ), 'wrong preview uri'
-        assert (
-            ts.thumb_uri == f'{sn.CADC_SCHEME}:{sn.COLLECTION}/'
-                            f'{test_bit}.subim_prev_256.jpg'
-        ), 'wrong thumbnail uri'
-        assert (
-            ts.lineage
-            == f'{ts.product_id}/{sn.SCHEME}:{sn.COLLECTION}/'
-               f'{test_bit}.subim.fits'
-        ), 'wrong lineage'
+def visit(observation, **kwargs):
+    mc.check_param(observation, Observation)
+    cadc_client = kwargs.get('cadc_client')
+    count = 0
+    if cadc_client is None:
+        logging.warning('No cadc_client parameter, no connection for input '
+                        'metadata. Stopping time_bounds_augmentation.')
+
+    else:
+        # conversation with JJK, 2018-08-08 - until such time as VLASS becomes
+        # a dynamic collection, rely on the time information as provided for
+        # all observations as retrieved on this date from:
+        #
+        # https://archive-new.nrao.edu/vlass/weblog/quicklook/*
+
+        count = 0
+        for plane in observation.planes.values():
+            for artifact in plane.artifacts.values():
+                if len(artifact.parts) > 0:
+                    logging.debug(f'working on artifact {artifact.uri}')
+                    version, reference = _augment_artifact(
+                        observation.observation_id, artifact
+                    )
+                    if version is not None:
+                        plane.provenance.version = version
+                    if reference is not None:
+                        plane.provenance.reference = reference
+                        count += 1
+        logging.info(f'Completed time bounds augmentation for '
+                     f'{observation.observation_id}')
+        global obs_metadata
+        obs_metadata = None
+    return {'artifacts': count}
 
 
-def test_source_names():
-    test_url = (
-        'https://archive-new.nrao.edu/vlass/quicklook/VLASS1.2/T23t09/'
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1/VLASS1.2.ql.T23t09.'
-        'J083851+483000.10.2048.v1.I.iter1.image.pbcor.tt0.subim.fits'
-    )
-    test_f_name = (
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1.I.iter1.image.pbcor.'
-        'tt0.subim.fits'
-    )
-    test_subject = nbc.EntryBuilder(sn.VlassName)
-    test_result = test_subject.build(test_url)
-    assert len(test_result.source_names) == 1, 'wrong length'
-    assert test_result.source_names[0] == test_url, 'wrong result'
+def _augment_artifact(obs_id, artifact):
+    chunk = artifact.parts['0'].chunks[0]
+    bounds = None
+    exposure = None
+    version = None
+    reference = None
+    found = False
+    logging.debug(f'Scrape for time metadata for {obs_id}')
+    global obs_metadata
+    if obs_metadata is None:
+        obs_metadata = scrape.retrieve_obs_metadata(obs_id)
+    if obs_metadata is not None and len(obs_metadata) > 0:
+        bounds, exposure = _build_time(
+            obs_metadata.get('Observation Start'),
+            obs_metadata.get('Observation End'),
+            obs_metadata.get('On Source'))
+        version = obs_metadata.get('Pipeline Version')
+        reference = obs_metadata.get('reference')
+        found = True
+    else:
+        logging.warning(f'Found no time metadata for {obs_id}')
 
-    test_result = test_subject.build(test_f_name)
-    assert len(test_result.source_names) == 1, 'wrong length'
-    assert test_result.source_names[0] == test_f_name, 'wrong result'
+    if found:
+        time_axis = CoordAxis1D(Axis('TIME', 'd'))
+        time_axis.bounds = bounds
+        chunk.time = TemporalWCS(time_axis)
+        chunk.time.exposure = exposure
+        chunk.time_axis = None
+        return version, reference
+    else:
+        return None, None
+
+
+def _build_time(start, end, tos):
+    bounds = CoordBounds1D()
+    if start is not None and end is not None:
+        start_date = ac.get_datetime(start)
+        start_date.format = 'mjd'
+        end_date = ac.get_datetime(end)
+        end_date.format = 'mjd'
+        start_ref_coord = RefCoord(0.5, start_date.value)
+        end_ref_coord = RefCoord(1.5, end_date.value)
+        bounds.samples.append(CoordRange1D(start_ref_coord, end_ref_coord))
+    exposure = None
+    if tos is not None:
+        exposure = float(ac.get_timedelta_in_s(tos))
+    return bounds, exposure

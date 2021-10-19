@@ -3,7 +3,7 @@
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 #
-#  (c) 2019.                            (c) 2019.
+#  (c) 2018.                            (c) 2018.
 #  Government of Canada                 Gouvernement du Canada
 #  National Research Council            Conseil national de recherches
 #  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -67,82 +67,51 @@
 # ***********************************************************************
 #
 
-from caom2pipe import name_builder_composable as nbc
+import os
+import pytest
+import shutil
+
+from mock import Mock, patch
+
+from caom2 import Status
+from caom2pipe import manage_composable as mc
+
+from vlass2caom2 import time_bounds_augmentation, quality_augmentation
+from vlass2caom2 import position_bounds_augmentation, scrape
 from vlass2caom2 import storage_name as sn
 
-
-def test_storage_name():
-    test_bit = (
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1.I.iter1.image.pbcor.tt0'
-    )
-    test_url = (
-        f'https://archive-new.nrao.edu/vlass/quicklook/VLASS1.2/T23t09/'
-        f'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1/{test_bit}.subim.fits'
-    )
-    ts1 = sn.VlassName(test_url)
-    ts2 = sn.VlassName(f'{test_bit}.subim.fits')
-    for ts in [ts1, ts2]:
-        assert ts.obs_id == 'VLASS1.2.T23t09.J083851+483000', 'wrong obs id'
-        assert ts.file_name == f'{test_bit}.subim.fits', 'wrong fname'
-        assert ts.file_id == f'{test_bit}.subim', 'wrong fid'
-        assert (
-            ts.file_uri == f'{sn.SCHEME}:VLASS/{test_bit}.subim.fits'
-        ), 'wrong uri'
-        assert (
-            ts.model_file_name == 'VLASS1.2.T23t09.J083851+483000.xml'
-        ), 'wrong model name'
-        assert (
-            ts.log_file == 'VLASS1.2.T23t09.J083851+483000.log'
-        ), 'wrong log file'
-        assert (
-            sn.VlassName.remove_extensions(ts.file_name) == f'{test_bit}.subim'
-        ), 'wrong extensions'
-        assert ts.epoch == 'VLASS1.2', 'wrong epoch'
-        assert (
-            ts.tile_url == 'https://archive-new.nrao.edu/vlass/quicklook/'
-            'VLASS1.2/T23t09/'
-        ), 'wrong tile url'
-        assert (
-            ts.rejected_url == 'https://archive-new.nrao.edu/vlass/'
-            'quicklook/VLASS1.2/QA_REJECTED/'
-        ), 'wrong rejected url'
-        assert (
-            ts.image_pointing_url == 'https://archive-new.nrao.edu/vlass/'
-            'quicklook/VLASS1.2/T23t09/VLASS1.2.ql.'
-            'T23t09.J083851+483000.10.2048.v1/'
-        ), 'wrong image pointing url'
-        assert ts.prev == f'{test_bit}.subim_prev.jpg', 'wrong preview'
-        assert ts.thumb == f'{test_bit}.subim_prev_256.jpg', 'wrong thumbnail'
-        assert (
-            ts.prev_uri == f'{sn.CADC_SCHEME}:{sn.COLLECTION}/'
-                           f'{test_bit}.subim_prev.jpg'
-        ), 'wrong preview uri'
-        assert (
-            ts.thumb_uri == f'{sn.CADC_SCHEME}:{sn.COLLECTION}/'
-                            f'{test_bit}.subim_prev_256.jpg'
-        ), 'wrong thumbnail uri'
-        assert (
-            ts.lineage
-            == f'{ts.product_id}/{sn.SCHEME}:{sn.COLLECTION}/'
-               f'{test_bit}.subim.fits'
-        ), 'wrong lineage'
+THIS_DIR = os.path.dirname(os.path.realpath(__file__))
+TEST_DATA_DIR = os.path.join(THIS_DIR, 'data')
+TEST_URI = 'ad:VLASS/VLASS1.1.ql.T01t01.J000228-363000.10.2048.v1.I.iter1.' \
+           'image.pbcor.tt0.rms.subim.fits'
 
 
-def test_source_names():
-    test_url = (
-        'https://archive-new.nrao.edu/vlass/quicklook/VLASS1.2/T23t09/'
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1/VLASS1.2.ql.T23t09.'
-        'J083851+483000.10.2048.v1.I.iter1.image.pbcor.tt0.subim.fits'
-    )
-    test_f_name = (
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1.I.iter1.image.pbcor.'
-        'tt0.subim.fits'
-    )
-    test_subject = nbc.EntryBuilder(sn.VlassName)
-    test_result = test_subject.build(test_url)
-    assert len(test_result.source_names) == 1, 'wrong length'
-    assert test_result.source_names[0] == test_url, 'wrong result'
+def test_aug_visit():
+    with pytest.raises(mc.CadcException):
+        time_bounds_augmentation.visit(None)
+    with pytest.raises(mc.CadcException):
+        quality_augmentation.visit(None)
 
-    test_result = test_subject.build(test_f_name)
-    assert len(test_result.source_names) == 1, 'wrong length'
-    assert test_result.source_names[0] == test_f_name, 'wrong result'
+
+def test_aug_visit_position_bounds():
+    test_file_id = 'VLASS1.2.ql.T24t07.J065836+563000.10.2048.v1.I.' \
+                   'iter1.image.pbcor.tt0.subim'
+    test_input_file = f'/test_files/{test_file_id}.fits'
+    if not os.path.exists(test_input_file):
+        shutil.copy(f'/usr/src/app/vlass2caom2/int_test/test_files/'
+                    f'{test_file_id}.fits',
+                    test_input_file)
+    test_file = os.path.join(TEST_DATA_DIR, 'fpf_start_obs.xml')
+    test_obs = mc.read_obs_from_file(test_file)
+    test_storage_name = sn.VlassName(test_input_file)
+    kwargs = {'working_directory': '/test_files',
+              'storage_name': test_storage_name,
+              'log_file_directory': os.path.join(TEST_DATA_DIR, 'logs')}
+    test_result = position_bounds_augmentation.visit(test_obs, **kwargs)
+    assert test_result is not None, 'should have a result status'
+    assert len(test_result) == 1, 'modified chunks count'
+    assert test_result['chunks'] == 2, 'chunk count'
+    return_file = os.path.join(THIS_DIR, f'{test_file_id}__footprint.txt')
+    assert not os.path.exists(return_file), 'bad cleanup'
+    if os.path.exists(test_input_file):
+        os.unlink(test_input_file)

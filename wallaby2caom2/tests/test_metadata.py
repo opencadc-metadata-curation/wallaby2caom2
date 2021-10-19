@@ -3,7 +3,7 @@
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 #
-#  (c) 2019.                            (c) 2019.
+#  (c) 2021.                            (c) 2021.
 #  Government of Canada                 Gouvernement du Canada
 #  National Research Council            Conseil national de recherches
 #  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -62,87 +62,39 @@
 #  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
 #                                       <http://www.gnu.org/licenses/>.
 #
-#  $Revision: 4 $
+#  : 4 $
 #
 # ***********************************************************************
 #
 
-from caom2pipe import name_builder_composable as nbc
-from vlass2caom2 import storage_name as sn
+from mock import patch
+
+from datetime import datetime
+from vlass2caom2 import metadata
+
+import test_scrape
 
 
-def test_storage_name():
-    test_bit = (
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1.I.iter1.image.pbcor.tt0'
-    )
-    test_url = (
-        f'https://archive-new.nrao.edu/vlass/quicklook/VLASS1.2/T23t09/'
-        f'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1/{test_bit}.subim.fits'
-    )
-    ts1 = sn.VlassName(test_url)
-    ts2 = sn.VlassName(f'{test_bit}.subim.fits')
-    for ts in [ts1, ts2]:
-        assert ts.obs_id == 'VLASS1.2.T23t09.J083851+483000', 'wrong obs id'
-        assert ts.file_name == f'{test_bit}.subim.fits', 'wrong fname'
-        assert ts.file_id == f'{test_bit}.subim', 'wrong fid'
-        assert (
-            ts.file_uri == f'{sn.SCHEME}:VLASS/{test_bit}.subim.fits'
-        ), 'wrong uri'
-        assert (
-            ts.model_file_name == 'VLASS1.2.T23t09.J083851+483000.xml'
-        ), 'wrong model name'
-        assert (
-            ts.log_file == 'VLASS1.2.T23t09.J083851+483000.log'
-        ), 'wrong log file'
-        assert (
-            sn.VlassName.remove_extensions(ts.file_name) == f'{test_bit}.subim'
-        ), 'wrong extensions'
-        assert ts.epoch == 'VLASS1.2', 'wrong epoch'
-        assert (
-            ts.tile_url == 'https://archive-new.nrao.edu/vlass/quicklook/'
-            'VLASS1.2/T23t09/'
-        ), 'wrong tile url'
-        assert (
-            ts.rejected_url == 'https://archive-new.nrao.edu/vlass/'
-            'quicklook/VLASS1.2/QA_REJECTED/'
-        ), 'wrong rejected url'
-        assert (
-            ts.image_pointing_url == 'https://archive-new.nrao.edu/vlass/'
-            'quicklook/VLASS1.2/T23t09/VLASS1.2.ql.'
-            'T23t09.J083851+483000.10.2048.v1/'
-        ), 'wrong image pointing url'
-        assert ts.prev == f'{test_bit}.subim_prev.jpg', 'wrong preview'
-        assert ts.thumb == f'{test_bit}.subim_prev_256.jpg', 'wrong thumbnail'
-        assert (
-            ts.prev_uri == f'{sn.CADC_SCHEME}:{sn.COLLECTION}/'
-                           f'{test_bit}.subim_prev.jpg'
-        ), 'wrong preview uri'
-        assert (
-            ts.thumb_uri == f'{sn.CADC_SCHEME}:{sn.COLLECTION}/'
-                            f'{test_bit}.subim_prev_256.jpg'
-        ), 'wrong thumbnail uri'
-        assert (
-            ts.lineage
-            == f'{ts.product_id}/{sn.SCHEME}:{sn.COLLECTION}/'
-               f'{test_bit}.subim.fits'
-        ), 'wrong lineage'
+@patch('caom2pipe.manage_composable.query_endpoint_session')
+def test_cache(query_endpoint_mock):
+    query_endpoint_mock.side_effect = test_scrape._query_endpoint
 
+    # preconditions
+    # depending on the order of test execution, the cache may already have
+    # been filled, so clear it for the purpose of this test
+    test_subject = metadata.cache
+    assert test_subject is not None, 'expect a test subject'
+    test_subject._refresh_bookmark = None
+    test_subject._qa_rejected_obs_ids = []
 
-def test_source_names():
-    test_url = (
-        'https://archive-new.nrao.edu/vlass/quicklook/VLASS1.2/T23t09/'
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1/VLASS1.2.ql.T23t09.'
-        'J083851+483000.10.2048.v1.I.iter1.image.pbcor.tt0.subim.fits'
-    )
-    test_f_name = (
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1.I.iter1.image.pbcor.'
-        'tt0.subim.fits'
-    )
-    test_subject = nbc.EntryBuilder(sn.VlassName)
-    test_result = test_subject.build(test_url)
-    assert len(test_result.source_names) == 1, 'wrong length'
-    assert test_result.source_names[0] == test_url, 'wrong result'
+    test_obs_id = 'VLASS1.2.T21t15.J141833+413000'
+    test_result = test_subject.is_qa_rejected(test_obs_id)
+    assert test_result is True, 'expected qa rejected obs id'
+    assert type(test_subject._refresh_bookmark) is datetime, \
+        f'post-condition 1 {test_subject._refresh_bookmark}'
+    assert len(test_subject._qa_rejected_obs_ids) == 4, 'post-condition 2'
 
-    test_result = test_subject.build(test_f_name)
-    assert len(test_result.source_names) == 1, 'wrong length'
-    assert test_result.source_names[0] == test_f_name, 'wrong result'
+    test_obs_id = 'VLASS1.1.T03t13.J080215-283000'
+    test_result = test_subject.is_qa_rejected(test_obs_id)
+    assert test_result is False, 'expected obs id to not be qa rejected'
+    assert len(test_subject._qa_rejected_obs_ids) == 4, 'post-condition 2'

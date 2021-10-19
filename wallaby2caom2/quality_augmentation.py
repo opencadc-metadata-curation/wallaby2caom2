@@ -3,7 +3,7 @@
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 #
-#  (c) 2019.                            (c) 2019.
+#  (c) 2018.                            (c) 2018.
 #  Government of Canada                 Gouvernement du Canada
 #  National Research Council            Conseil national de recherches
 #  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -67,82 +67,43 @@
 # ***********************************************************************
 #
 
-from caom2pipe import name_builder_composable as nbc
-from vlass2caom2 import storage_name as sn
+import logging
+
+from caom2 import Observation, Requirements, Status
+from caom2pipe import manage_composable as mc
+from vlass2caom2 import metadata
+
+START_DATE = '2019-01-01'
 
 
-def test_storage_name():
-    test_bit = (
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1.I.iter1.image.pbcor.tt0'
-    )
-    test_url = (
-        f'https://archive-new.nrao.edu/vlass/quicklook/VLASS1.2/T23t09/'
-        f'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1/{test_bit}.subim.fits'
-    )
-    ts1 = sn.VlassName(test_url)
-    ts2 = sn.VlassName(f'{test_bit}.subim.fits')
-    for ts in [ts1, ts2]:
-        assert ts.obs_id == 'VLASS1.2.T23t09.J083851+483000', 'wrong obs id'
-        assert ts.file_name == f'{test_bit}.subim.fits', 'wrong fname'
-        assert ts.file_id == f'{test_bit}.subim', 'wrong fid'
-        assert (
-            ts.file_uri == f'{sn.SCHEME}:VLASS/{test_bit}.subim.fits'
-        ), 'wrong uri'
-        assert (
-            ts.model_file_name == 'VLASS1.2.T23t09.J083851+483000.xml'
-        ), 'wrong model name'
-        assert (
-            ts.log_file == 'VLASS1.2.T23t09.J083851+483000.log'
-        ), 'wrong log file'
-        assert (
-            sn.VlassName.remove_extensions(ts.file_name) == f'{test_bit}.subim'
-        ), 'wrong extensions'
-        assert ts.epoch == 'VLASS1.2', 'wrong epoch'
-        assert (
-            ts.tile_url == 'https://archive-new.nrao.edu/vlass/quicklook/'
-            'VLASS1.2/T23t09/'
-        ), 'wrong tile url'
-        assert (
-            ts.rejected_url == 'https://archive-new.nrao.edu/vlass/'
-            'quicklook/VLASS1.2/QA_REJECTED/'
-        ), 'wrong rejected url'
-        assert (
-            ts.image_pointing_url == 'https://archive-new.nrao.edu/vlass/'
-            'quicklook/VLASS1.2/T23t09/VLASS1.2.ql.'
-            'T23t09.J083851+483000.10.2048.v1/'
-        ), 'wrong image pointing url'
-        assert ts.prev == f'{test_bit}.subim_prev.jpg', 'wrong preview'
-        assert ts.thumb == f'{test_bit}.subim_prev_256.jpg', 'wrong thumbnail'
-        assert (
-            ts.prev_uri == f'{sn.CADC_SCHEME}:{sn.COLLECTION}/'
-                           f'{test_bit}.subim_prev.jpg'
-        ), 'wrong preview uri'
-        assert (
-            ts.thumb_uri == f'{sn.CADC_SCHEME}:{sn.COLLECTION}/'
-                            f'{test_bit}.subim_prev_256.jpg'
-        ), 'wrong thumbnail uri'
-        assert (
-            ts.lineage
-            == f'{ts.product_id}/{sn.SCHEME}:{sn.COLLECTION}/'
-               f'{test_bit}.subim.fits'
-        ), 'wrong lineage'
+def visit(observation, **kwargs):
+    mc.check_param(observation, Observation)
+
+    # conversation with JJK, PD 2018-08-27 - use the observation-level
+    # data quality flag.
+    #
+    # There's no header information, so get the list of QA rejected files
+    # from URLs that look like this:
+    #
+    # https://archive-new.nrao.edu/vlass/quicklook/VLASS*/QA_REJECTED/#
+    #
+    # and compare against that list. The list gets items added/removed over
+    # time.
+
+    count = 0
+    original = observation.requirements
+    if metadata.cache.is_qa_rejected(observation.observation_id):
+        observation.requirements = Requirements(Status.FAIL)
+    else:
+        observation.requirements = None
+    if observation.requirements != original:
+        logging.warning(f'Changed requirements to {observation.requirements} '
+                        f'for {observation.observation_id}.')
+        count = 1
+    logging.info(
+        f'Completed quality augmentation for {observation.observation_id}')
+    return {'observations': count}
 
 
-def test_source_names():
-    test_url = (
-        'https://archive-new.nrao.edu/vlass/quicklook/VLASS1.2/T23t09/'
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1/VLASS1.2.ql.T23t09.'
-        'J083851+483000.10.2048.v1.I.iter1.image.pbcor.tt0.subim.fits'
-    )
-    test_f_name = (
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1.I.iter1.image.pbcor.'
-        'tt0.subim.fits'
-    )
-    test_subject = nbc.EntryBuilder(sn.VlassName)
-    test_result = test_subject.build(test_url)
-    assert len(test_result.source_names) == 1, 'wrong length'
-    assert test_result.source_names[0] == test_url, 'wrong result'
-
-    test_result = test_subject.build(test_f_name)
-    assert len(test_result.source_names) == 1, 'wrong length'
-    assert test_result.source_names[0] == test_f_name, 'wrong result'
+def _set_failed(observation):
+    observation.requirements = Requirements(Status.FAIL)

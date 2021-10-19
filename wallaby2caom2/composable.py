@@ -3,7 +3,7 @@
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 #
-#  (c) 2019.                            (c) 2019.
+#  (c) 2018.                            (c) 2018.
 #  Government of Canada                 Gouvernement du Canada
 #  National Research Council            Conseil national de recherches
 #  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -67,25 +67,95 @@
 # ***********************************************************************
 #
 
-"""
-Implements the default entry point functions for the workflow 
-application.
-
-'run' executes based on either provided lists of work, or files on disk.
-'run_by_state' executes incrementally, usually based on time-boxed 
-intervals.
-"""
-
 import logging
 import sys
 import traceback
 
+from caom2pipe import client_composable as clc
+from caom2pipe import data_source_composable as dsc
+from caom2pipe import manage_composable as mc
+from caom2pipe import name_builder_composable as nbc
 from caom2pipe import run_composable as rc
-from wallaby2caom2 import APPLICATION, WallabyName
+from caom2pipe import transfer_composable as tc
+from vos import Client
+from wallaby2caom2 import storage_name as sn
+from wallaby2caom2 import time_bounds_augmentation, quality_augmentation
+from wallaby2caom2 import position_bounds_augmentation
+from wallaby2caom2 import data_source, scrape
+from wallaby2caom2 import preview_augmentation
 
 
-META_VISITORS = []
-DATA_VISITORS = []
+WALLABY_BOOKMARK = 'wallaby_timestamp'
+
+META_VISITORS = [time_bounds_augmentation, quality_augmentation]
+DATA_VISITORS = [position_bounds_augmentation, preview_augmentation]
+
+
+def _run_single():
+    """expects a single file name on the command line"""
+    builder = nbc.EntryBuilder(sn.WallabyName)
+    wallaby_name = builder.build(sys.argv[1])
+    return rc.run_single(
+        storage_name=wallaby_name,
+        command_name=sn.APPLICATION,
+        meta_visitors=META_VISITORS,
+        data_visitors=DATA_VISITORS,
+        store_transfer=tc.HttpTransfer(),
+    )
+
+
+def run_single():
+    """Wraps _run_single in exception handling."""
+    try:
+        result = _run_single()
+        sys.exit(result)
+    except Exception as e:
+        logging.error(e)
+        tb = traceback.format_exc()
+        logging.debug(tb)
+        sys.exit(-1)
+
+
+def _run_state():
+    """Uses a state file with a timestamp to control which quicklook
+    files will be retrieved from VLASS.
+
+    Ingestion is based on URLs, because a URL that contains the phrase
+    'QA_REJECTED' is the only way to tell if the attribute 'requirements'
+    should be set to 'fail', or not.
+    """
+    config = mc.Config()
+    config.get_executors()
+    state = mc.State(config.state_fqn)
+    # a way to get a datetime from a string, or maybe a datetime, depending
+    # on the execution environment
+    start_time = mc.increment_time(state.get_bookmark(WALLABY_BOOKMARK), 0)
+    todo_list, max_date = scrape.build_file_url_list(start_time)
+    source = data_source.NraoPage(todo_list)
+    name_builder = nbc.EntryBuilder(sn.WallabyName)
+    return rc.run_by_state(
+        config=config,
+        command_name=sn.APPLICATION,
+        bookmark_name=WALLABY_BOOKMARK,
+        meta_visitors=META_VISITORS,
+        data_visitors=DATA_VISITORS,
+        name_builder=name_builder,
+        source=source,
+        end_time=max_date,
+        store_transfer=tc.HttpTransfer(),
+    )
+
+
+def run_state():
+    """Wraps _run_state in exception handling."""
+    try:
+        result = _run_state()
+        sys.exit(result)
+    except Exception as e:
+        logging.error(e)
+        tb = traceback.format_exc()
+        logging.debug(tb)
+        sys.exit(-1)
 
 
 def _run():
@@ -95,18 +165,27 @@ def _run():
     :return 0 if successful, -1 if there's any sort of failure. Return status
         is used by airflow for task instance management and reporting.
     """
+    config = mc.Config()
+    config.get_executors()
+    clients = None
+    source_transfer = None
+    if mc.TaskType.STORE in config.task_types:
+        vo_client = Client(vospace_certfile=config.proxy_fqn)
+        clients = clc.ClientCollection(config)
+        source_transfer = tc.VoFitsTransfer(vo_client, clients.data_client)
+    name_builder = nbc.EntryBuilder(sn.WallabyName)
     return rc.run_by_todo(
-        config=None, 
-        name_builder=None, 
-        command_name=APPLICATION,
-        meta_visitors=META_VISITORS, 
-        data_visitors=DATA_VISITORS, 
-        chooser=None,
+        name_builder=name_builder,
+        command_name=sn.APPLICATION,
+        meta_visitors=META_VISITORS,
+        data_visitors=DATA_VISITORS,
+        store_transfer=source_transfer,
+        clients=clients,
     )
 
 
 def run():
-    """Wraps _run in exception handling, with sys.exit calls."""
+    """Wraps _run in exception handling."""
     try:
         result = _run()
         sys.exit(result)
@@ -117,28 +196,36 @@ def run():
         sys.exit(-1)
 
 
-def _run_state():
-    """Uses a state file with a timestamp to control which entries will be
-    processed.
+def _run_remote():
     """
-    return rc.run_by_state_ts(
-        config=None, 
-        name_builder=None,
-        command_name=APPLICATION, 
-        bookmark_name=None, 
+    Uses a VOSpace directory listing to identify the work to be done.
+
+    :return 0 if successful, -1 if there's any sort of failure. Return status
+        is used by airflow for task instance management and reporting.
+    """
+    config = mc.Config()
+    config.get_executors()
+    vo_client = Client(vospace_certfile=config.proxy_fqn)
+    clients = clc.ClientCollection(config)
+    source_transfer = tc.VoFitsTransfer(vo_client, clients.data_client)
+    data_source = dsc.VaultDataSource(vo_client, config)
+    name_builder = nbc.EntryBuilder(sn.WallabyName)
+    return rc.run_by_todo(
+        name_builder=name_builder,
+        command_name=sn.APPLICATION,
         meta_visitors=META_VISITORS,
-        data_visitors=DATA_VISITORS, 
-        end_time=None,
-        source=None, 
-        chooser=None,
+        data_visitors=DATA_VISITORS,
+        source=data_source,
+        store_transfer=source_transfer,
+        clients=clients,
     )
 
 
-def run_state():
-    """Wraps _run_state in exception handling."""
+def run_remote():
+    """Wraps _run_remote in exception handling, with sys.exit calls."""
     try:
-        _run_state()
-        sys.exit(0)
+        result = _run_remote()
+        sys.exit(result)
     except Exception as e:
         logging.error(e)
         tb = traceback.format_exc()
