@@ -79,7 +79,7 @@ from matplotlib.patches import ConnectionPatch, Rectangle
 
 from caom2 import ReleaseType, ProductType
 from caom2pipe import manage_composable as mc
-from vlass2caom2 import storage_name as sn
+from wallaby2caom2 import storage_name as sn
 
 
 class VlassPreview(mc.PreviewVisitor):

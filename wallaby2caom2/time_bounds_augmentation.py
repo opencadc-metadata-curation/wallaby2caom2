@@ -74,7 +74,7 @@ from caom2 import TemporalWCS, CoordAxis1D, Axis
 from caom2pipe import astro_composable as ac
 from caom2pipe import manage_composable as mc
 
-from vlass2caom2 import scrape
+from wallaby2caom2 import scrape
 
 obs_metadata = None
 

@@ -78,7 +78,7 @@ from caom2 import Observation, ProductType
 from caom2utils import ObsBlueprint, get_gen_proc_arg_parser, gen_proc
 from caom2pipe import astro_composable as ac
 from caom2pipe import manage_composable as mc
-from vlass2caom2 import storage_name as sn
+from wallaby2caom2 import storage_name as sn
 
 
 __all__ = ['wallaby_main', 'update', 'WallabyCardinality', 'to_caom2']

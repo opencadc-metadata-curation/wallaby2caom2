@@ -3,10 +3,12 @@ FROM opencadc/astropy:3.9-slim
 RUN apt-get update --no-install-recommends && \
     apt-get install -y \
         build-essential \
-        git && \
+        git \
+        wget && \
     rm -rf /var/lib/apt/lists/ /tmp/* /var/tmp/*
-    
-RUN pip install cadcdata \
+ 
+RUN pip install bs4 \
+    cadcdata \
     cadctap \
     caom2 \
     caom2repo \
@@ -29,7 +31,7 @@ ARG CAOM2_BRANCH=master
 ARG CAOM2_REPO=opencadc
 ARG OPENCADC_BRANCH=master
 ARG OPENCADC_REPO=opencadc
-ARG PIPE_BRANCH=master
+ARG PIPE_BRANCH=main
 ARG PIPE_REPO=opencadc
 ARG VOS_BRANCH=master
 ARG VOS_REPO=opencadc
@@ -53,6 +55,6 @@ RUN git clone https://github.com/${CAOM2_REPO}/caom2tools.git && \
 
 RUN pip install git+https://github.com/${OPENCADC_REPO}/caom2pipe@${OPENCADC_BRANCH}#egg=caom2pipe
   
-RUN pip install git+https://github.com/${OPENCADC_REPO}/wallaby2caom2@${OPENCADC_BRANCH}#egg=wallaby2caom2
+RUN pip install git+https://github.com/${PIPE_REPO}/wallaby2caom2@${PIPE_BRANCH}#egg=wallaby2caom2
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

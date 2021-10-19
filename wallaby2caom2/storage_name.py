@@ -71,7 +71,7 @@ from os.path import basename
 from urllib.parse import urlparse
 from caom2pipe import caom_composable as cc
 from caom2pipe import manage_composable as mc
-from vlass2caom2 import scrape
+from wallaby2caom2 import scrape
 
 
 __all__ = [
