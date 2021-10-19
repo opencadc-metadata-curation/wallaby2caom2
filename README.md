@@ -8,7 +8,7 @@ In an empty directory:
 1. This is the working directory, so it should probably have some space.
 
 1. In the `main` branch of this repository, find the file `Dockerfile`. In the
-`scripts` directory, find the files 
+`scripts` directory, find the files
 `docker-entrypoint.sh`, and `config.yml`. Copy these files to the working directory.
 
    ```
@@ -68,10 +68,10 @@ proxy certificate as follows. You will be prompted for the password for your CAD
 1. To edit and test the application from inside a container:
 
    ```
-   user@dockerhost:<cwd># git clone https://github.com/opencadc/wallaby2caom2.git 
+   user@dockerhost:<cwd># git clone https://github.com/opencadc/wallaby2caom2.git
    user@dockerhost:<cwd># docker run --rm -ti -v <cwd>:/usr/src/app --user $(id -u):$(id -g) -e HOME=/usr/src/app --name wallaby_run_cli wallaby_run_cli /bin/bash
    root@53bef30d8af3:/usr/src/app# pip install -e ./wallaby2caom2
-   root@53bef30d8af3:/usr/src/app# pip install mock pytest 
+   root@53bef30d8af3:/usr/src/app# pip install mock pytest
    root@53bef30d8af3:/usr/src/app# cd wallaby2caom2/wallaby2caom2/tests
    root@53bef30d8af3:/usr/src/app# pytest
    ```

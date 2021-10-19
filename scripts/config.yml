@@ -7,8 +7,10 @@ working_directory: /usr/src/app/wallaby2caom2
 proxy_file_name: /usr/src/app/cadcproxy.pem
 # operational value is ivo://cadc.nrc.ca/ams
 # - modifies entries on sc2.canfar.net
+# test resource_id value:
 resource_id: ivo://cadc.nrc.ca/sc2repo
-# operational value is ivo://cadc.nrc.ca/ams/wallaby
+# operational resource_id value:
+# resource_id: ivo://cadc.nrc.ca/ams/cirada
 # - queries entries on sc2.canfar.net
 tap_id: ivo://cadc.nrc.ca/sc2tap
 # file that contains the list of entries to process
@@ -44,10 +46,6 @@ retry_file_name: retries.txt
 # this file is created in the logs directory, default is 'progress.txt'
 progress_file_name: progress.txt
 #
-# ad stream value - sorry
-# set stream to 'default', if using TaskType STORE
-stream: default
-archive: WALLABY
 collection: WALLABY
 #
 # CADC service execution metrics
@@ -71,6 +69,10 @@ state_file_name: state.yml
 # time-box.
 #
 interval: 600
+data_sources:
+  - vos:goliaths/wallaby_test
+data_source_extensions:
+  - .fits
 # how to control the work that gets done
 # possible values are:
 # - scrape - read the headers, write out the xml - kind of a test mode
@@ -78,9 +80,6 @@ interval: 600
 # - ingest - read the headers, write the xml to the endpoint found by resource_id
 # - modify - create a footprint and previews for an existing CAOM model record
 task_types: 
-  - ingest
+  - scrape
 features:
-  supports_composite: False
-  supports_multiple_files: False
-  use_file_names: True
-  use_urls: False
+  supports_latest_client: True
