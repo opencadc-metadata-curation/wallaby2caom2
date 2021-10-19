@@ -6,7 +6,7 @@ RUN apt-get update --no-install-recommends && \
         git \
         wget && \
     rm -rf /var/lib/apt/lists/ /tmp/* /var/tmp/*
-    
+
 RUN pip install bs4 \
     cadcdata \
     cadctap \
