@@ -12,6 +12,12 @@ RUN apt-get update --no-install-recommends && apt-get dist-upgrade -y && \
 ARG OPENCADC_BRANCH=main
 ARG OPENCADC_REPO=opencadc
 
+RUN oldpath=`pwd` && cd /tmp && \
+    wget http://www.eso.org/~fstoehr/footprintfinder.py && \
+    cp footprintfinder.py /usr/local/lib/python3.9/site-packages/footprintfinder.py && \
+    chmod 755 /usr/local/lib/python3.9/site-packages/footprintfinder.py && \
+    cd $oldpath
+
 WORKDIR /usr/src/app
 
 RUN git clone https://github.com/${OPENCADC_REPO}/caom2tools.git && \
