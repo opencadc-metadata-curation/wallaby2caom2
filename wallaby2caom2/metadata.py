@@ -98,7 +98,7 @@ class VLASSCache(object):
         for timestamp, urls in todo_list.items():
             for url in urls:
                 # there are trailing slashes on the NRAO VLASS QL page
-                obs_id = sn.VlassName.get_obs_id_from_file_name(
+                obs_id = sn.WallabyName.get_obs_id_from_file_name(
                     url.split('/')[-2])
                 self._logger.debug(f'Add QA REJECTED {obs_id}.')
                 self._qa_rejected_obs_ids.append(obs_id)

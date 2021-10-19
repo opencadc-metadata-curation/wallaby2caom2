@@ -82,7 +82,7 @@ from caom2pipe import manage_composable as mc
 from wallaby2caom2 import storage_name as sn
 
 
-class VlassPreview(mc.PreviewVisitor):
+class WallabyPreview(mc.PreviewVisitor):
     """
     generate_plots code written by Nat Comeau.
 
@@ -91,7 +91,7 @@ class VlassPreview(mc.PreviewVisitor):
     """
 
     def __init__(self, **kwargs):
-        super(VlassPreview, self).__init__(
+        super(WallabyPreview, self).__init__(
             sn.COLLECTION, ReleaseType.META, **kwargs
         )
         self._science_file = self._storage_name.file_name
@@ -129,7 +129,7 @@ class VlassPreview(mc.PreviewVisitor):
 
         # Plot the cutout in the right subplot
         with fits.open(self._science_fqn) as hdul:
-            cutout_data, x_max, y_max = VlassPreview._get_cutout(
+            cutout_data, x_max, y_max = WallabyPreview._get_cutout(
                 hdul['PRIMARY'].data[0, 0])
             interval = ZScaleInterval()
             array = interval(cutout_data)
@@ -266,5 +266,5 @@ class VlassPreview(mc.PreviewVisitor):
 
 
 def visit(observation, **kwargs):
-    previewer = VlassPreview(**kwargs)
+    previewer = WallabyPreview(**kwargs)
     return previewer.visit(observation)

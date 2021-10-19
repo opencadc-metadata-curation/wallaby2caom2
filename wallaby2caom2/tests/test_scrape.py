@@ -80,7 +80,7 @@ from caom2pipe import name_builder_composable as nbc
 from caom2.diff import get_differences
 
 from wallaby2caom2 import scrape, time_bounds_augmentation, composable
-from vlass2caom2 import validator, VlassName, data_source
+from wallaby2caom2 import validator, WallabyName, data_source
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -252,7 +252,7 @@ def test_qa_rejected_bits():
 
 
 @pytest.mark.skip()
-@patch('vlass2caom2.scrape.requests.get')
+@patch('wallaby2caom2.scrape.requests.get')
 @patch('caom2pipe.manage_composable.query_endpoint_session')
 def test_visit(query_endpoint_mock, get_mock):
     get_mock.return_value.__enter__.return_value.raw = WL_INDEX
@@ -338,7 +338,7 @@ def test_run_state_file_modify(run_mock, query_endpoint_mock):
 
 
 @pytest.mark.skip()
-@patch('vlass2caom2.scrape.requests.get')
+@patch('wallaby2caom2.scrape.requests.get')
 def test_init_web_log_content(get_mock):
     get_mock.return_value.__enter__.return_value.raw = WL_INDEX
     if len(scrape.web_log_content) > 0:
@@ -360,7 +360,7 @@ def test_init_web_log_content(get_mock):
 
 
 @pytest.mark.skip()
-@patch('vlass2caom2.scrape.requests.get')
+@patch('wallaby2caom2.scrape.requests.get')
 @patch('caom2pipe.manage_composable.query_endpoint_session')
 def test_retrieve_metadata(query_endpoint_mock, get_mock):
     get_mock.return_value.__enter__.return_value.raw = WL_INDEX
@@ -435,7 +435,7 @@ def test_run_state(query_endpoint_mock, run_mock, access_mock):
         assert run_mock.called, 'should have been called'
         args, kwargs = run_mock.call_args
         test_storage = args[0]
-        assert isinstance(test_storage, VlassName), type(test_storage)
+        assert isinstance(test_storage, WallabyName), type(test_storage)
         assert test_storage.url.startswith(
             'https://archive-new.nrao.edu/vlass/quicklook/VLASS1.2/'), \
             test_storage.url
@@ -473,7 +473,7 @@ def test_run_state_with_work(query_endpoint_mock, run_mock, access_mock):
         assert run_mock.call_count == 40, 'wrong call count'
         args, kwargs = run_mock.call_args
         test_storage = args[0]
-        assert isinstance(test_storage, VlassName), type(test_storage)
+        assert isinstance(test_storage, WallabyName), type(test_storage)
         assert test_storage.url.startswith(
             'https://archive-new.nrao.edu/vlass/quicklook/VLASS1.2/'), \
             test_storage.url

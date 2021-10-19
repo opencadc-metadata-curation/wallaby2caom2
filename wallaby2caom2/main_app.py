@@ -264,7 +264,7 @@ class WallabyCardinality(object):
 
 def to_caom2():
     args = get_gen_proc_arg_parser().parse_args()
-    vlass = VlassCardinality()
+    vlass = WallabyCardinality()
     blueprints = vlass.build_blueprints(args)
     return gen_proc(args, blueprints)
 

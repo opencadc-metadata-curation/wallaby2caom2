@@ -79,14 +79,14 @@ def test_storage_name():
         f'https://archive-new.nrao.edu/vlass/quicklook/VLASS1.2/T23t09/'
         f'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1/{test_bit}.subim.fits'
     )
-    ts1 = sn.VlassName(test_url)
-    ts2 = sn.VlassName(f'{test_bit}.subim.fits')
+    ts1 = sn.WallabyName(test_url)
+    ts2 = sn.WallabyName(f'{test_bit}.subim.fits')
     for ts in [ts1, ts2]:
         assert ts.obs_id == 'VLASS1.2.T23t09.J083851+483000', 'wrong obs id'
         assert ts.file_name == f'{test_bit}.subim.fits', 'wrong fname'
         assert ts.file_id == f'{test_bit}.subim', 'wrong fid'
         assert (
-            ts.file_uri == f'{sn.SCHEME}:VLASS/{test_bit}.subim.fits'
+            ts.file_uri == f'{sn.SCHEME}:{sn.COLLECTION}/{test_bit}.subim.fits'
         ), 'wrong uri'
         assert (
             ts.model_file_name == 'VLASS1.2.T23t09.J083851+483000.xml'
@@ -95,7 +95,7 @@ def test_storage_name():
             ts.log_file == 'VLASS1.2.T23t09.J083851+483000.log'
         ), 'wrong log file'
         assert (
-            sn.VlassName.remove_extensions(ts.file_name) == f'{test_bit}.subim'
+            sn.WallabyName.remove_extensions(ts.file_name) == f'{test_bit}.subim'
         ), 'wrong extensions'
         assert ts.epoch == 'VLASS1.2', 'wrong epoch'
         assert (
@@ -138,7 +138,7 @@ def test_source_names():
         'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1.I.iter1.image.pbcor.'
         'tt0.subim.fits'
     )
-    test_subject = nbc.EntryBuilder(sn.VlassName)
+    test_subject = nbc.EntryBuilder(sn.WallabyName)
     test_result = test_subject.build(test_url)
     assert len(test_result.source_names) == 1, 'wrong length'
     assert test_result.source_names[0] == test_url, 'wrong result'

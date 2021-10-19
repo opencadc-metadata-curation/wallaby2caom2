@@ -68,8 +68,8 @@
 #
 
 from caom2pipe import manage_composable as mc
-from wallaby2caom2 import preview_augmentation, cleanup_augmentation
-from vlass2caom2 import storage_name as sn
+from wallaby2caom2 import preview_augmentation
+from wallaby2caom2 import storage_name as sn
 
 from mock import patch
 from test_main_app import TEST_DATA_DIR
@@ -83,7 +83,7 @@ def test_preview_augmentation(access_mock):
         'VLASS1.1.ql.T01t01.J000228-363000.10.2048.v1.I.iter1.image.pbcor.'
         'tt0.subim.fits'
     )
-    test_storage_name = sn.VlassName(test_science_f_name)
+    test_storage_name = sn.WallabyName(test_science_f_name)
     test_obs = mc.read_obs_from_file(test_fqn)
     test_config = mc.Config()
     test_rejected = mc.Rejected(f'{TEST_DATA_DIR}/rejected.yml')
@@ -103,20 +103,3 @@ def test_preview_augmentation(access_mock):
     assert test_result.get('artifacts') == 2, 'wrong result'
     assert len(test_obs.planes[test_storage_name.product_id].artifacts) == 6, \
         'wrong ending # of artifacts'
-
-    # does artifact re-naming work?
-    test_url = (
-        f'https://archive-new.nrao.edu/vlass/quicklook/VLASS1.1/'
-        f'T01t01/VLASS1.1.ql.T01t01.J000228-363000.10.2048.v1/'
-        f'{test_science_f_name}'
-    )
-    kwargs = {'url': test_url}
-    test_result = cleanup_augmentation.visit(test_obs, **kwargs)
-    test_artifacts = test_obs.planes[test_storage_name.product_id].artifacts
-    assert test_result is not None, 'expect a result'
-    assert 'artifacts' in test_result, 'expect artifact count'
-    assert test_result['artifacts'] == 2, f'actual deleted count ' \
-                                          f'{test_result["artifacts"]}'
-    assert len(test_artifacts) == 4, 'wrong ending conditions'
-    assert test_storage_name.prev_uri in test_artifacts, 'missing preview'
-    assert test_storage_name.thumb_uri in test_artifacts, 'missing thumbnail'

@@ -70,7 +70,7 @@
 
 from cadcdata import FileInfo
 from caom2pipe import manage_composable as mc
-from wallaby2caom2 import to_caom2, VlassName
+from wallaby2caom2 import to_caom2, WallabyName
 from caom2.diff import get_differences
 from caom2utils import data_util
 
@@ -196,7 +196,7 @@ def _get_local(test_files):
 def _get_lineage(obs_id, test_files):
     if obs_id in [obs_id_a, obs_id_c, obs_id_c + 'r', obs_id_f]:
         return ' '.join(
-            VlassName(ii.replace('.header', '')).lineage
+            WallabyName(ii.replace('.header', '')).lineage
             for ii in test_files[1:]
         )
     else:
