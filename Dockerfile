@@ -1,6 +1,6 @@
 FROM opencadc/astropy:3.9-slim
 
-RUN apt-get update -y && apt-get dist-upgrade -y && \
+RUN apt-get update --no-install-recommends && \
     apt-get install -y \
         build-essential \
         git && \
@@ -16,6 +16,12 @@ RUN pip install cadcdata \
     PyYAML \
     spherical-geometry \
     vos
+
+RUN oldpath=`pwd` && cd /tmp && \
+    wget http://www.eso.org/~fstoehr/footprintfinder.py && \
+    cp footprintfinder.py /usr/local/lib/python3.9/site-packages/footprintfinder.py && \
+    chmod 755 /usr/local/lib/python3.9/site-packages/footprintfinder.py && \
+    cd $oldpath
 
 WORKDIR /usr/src/app
 
