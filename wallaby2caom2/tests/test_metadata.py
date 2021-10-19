@@ -70,7 +70,7 @@
 from mock import patch
 
 from datetime import datetime
-from vlass2caom2 import metadata
+from wallaby2caom2 import metadata
 
 import test_scrape
 

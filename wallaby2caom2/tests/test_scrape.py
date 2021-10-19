@@ -79,7 +79,7 @@ from caom2pipe import manage_composable as mc
 from caom2pipe import name_builder_composable as nbc
 from caom2.diff import get_differences
 
-from vlass2caom2 import scrape, time_bounds_augmentation, composable
+from wallaby2caom2 import scrape, time_bounds_augmentation, composable
 from vlass2caom2 import validator, VlassName, data_source
 
 
