@@ -70,7 +70,7 @@ state_file_name: state.yml
 #
 interval: 600
 data_sources:
-  - vos:goliaths/wallaby_test
+  - vos:vos:cirada/emission/PilotFieldReleases_Jun2021/KinematicModels
 data_source_extensions:
   - .fits
 # how to control the work that gets done
