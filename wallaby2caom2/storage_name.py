@@ -100,14 +100,14 @@ class WallabyName(mc.StorageName):
         entry=None,
     ):
         self._collection = COLLECTION
-        self._entry = entry
-        temp = urlparse(entry)
+        self._entry = entry.replace('.header', '')
+        temp = urlparse(entry.replace('.header', ''))
         if temp.scheme == '':
             self._url = None
-            self._file_name = basename(entry)
+            self._file_name = basename(entry.replace('.header', ''))
         else:
             if temp.scheme.startswith('http') or temp.scheme.startswith('vos'):
-                self._url = entry
+                self._url = entry.replace('.header', '')
                 self._file_name = basename(temp.path)
             else:
                 # it's an Artifact URI
@@ -166,7 +166,7 @@ class WallabyName(mc.StorageName):
 
     @property
     def source_names(self):
-        return [self.entry]
+        return self._source_names
 
     @property
     def thumb(self):

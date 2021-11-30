@@ -1,0 +1,37 @@
+SIMPLE  =                    T / file does conform to FITS standard             
+BITPIX  =                  -32 / number of bits per data pixel                  
+NAXIS   =                    3 / number of data axes                            
+NAXIS1  =                   94 / length of data axis 1                          
+NAXIS2  =                   81 / length of data axis 2                          
+NAXIS3  =                   28 / length of data axis 3                          
+EXTEND  =                    T / FITS dataset may contain extensions            
+COMMENT   FITS (Flexible Image Transport System) format is defined in 'Astronomy
+COMMENT   and Astrophysics', volume 376, page 359; bibcode: 2001A&A...376..359H 
+CTYPE1  = 'RA---SIN'           / PRIMARY AXIS Type                              
+CRPIX1  =       1.00000000E+00 / X-ref-pixel                                    
+CDELT1  =      -1.66666671E-03 / X-increment                                    
+CRVAL1  =       1.51014328E+02 / Value at X-ref-pixel                           
+CUNIT1  = 'DEGREES '                                                            
+CTYPE2  = 'DEC--SIN'           / PRIMARY AXIS Type                              
+CRPIX2  =       1.00000000E+00 / Y-ref-pixel                                    
+CDELT2  =       1.66666671E-03 / Y-increment                                    
+CRVAL2  =      -2.70884037E+01 / Value at Y-ref-pixel                           
+CUNIT2  = 'DEGREES '                                                            
+CTYPE3  = 'VELO-LSR'           / PRIMARY AXIS Type                              
+CRPIX3  =       1.40000000E+01 / Z-ref-channel                                  
+CDELT3  =      -1.18003955E+04 / Z-increment                                    
+CRVAL3  =       9.56375438E+05 / Value at Z-ref-channel                         
+CUNIT3  = 'm/s     '                                                            
+EPOCH   =       2.00000000E+03 / EPOCH                                          
+BUNIT   = 'Jy/Beam '           / no comment                                     
+BTYPE   = 'intensity'                                                           
+BMAJ    =       8.36154073E-03 / Major Axis of the Beam                         
+BMIN    =       8.35374370E-03 / Major Axis of the Beam                         
+BPA     =       1.23190470E+01 / Major Axis of the Beam                         
+DATE    = '30-04-2021'                                                          
+ORIGIN  = 'MockCubeGenerator'                                                   
+OBJECT  = 'TestCube'                                                            
+RESTFREQ=       1.42040576E+09 / Rest frequency of HI in Hz                     
+SPECSYS = 'BARYCENT'                                                            
+RADESYS = 'FK5     '                                                            
+END                                                                             

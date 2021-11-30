@@ -118,8 +118,7 @@ def accumulate_wcs(bp):
 
     # plane level
     bp.set('Plane.calibrationLevel', '2')
-    bp.clear('Plane.dataProductType')
-    bp.add_fits_attribute('Plane.dataProductType', 'CUBE')
+    bp.set('Plane.dataProductType', 'cube')
 
     # Clare Chandler via slack - 28-08-18
     bp.clear('Plane.provenance.name')
@@ -196,7 +195,6 @@ def update(observation, **kwargs):
 
     try:
 
-        plane_ids_to_delete = []
         mc.check_param(observation, Observation)
         for plane in observation.planes.values():
             for artifact in plane.artifacts.values():
@@ -214,14 +212,7 @@ def update(observation, **kwargs):
                                 # blueprint is implemented to not set WCS
                                 # information to None
                                 chunk.energy.restfrq = None
-            if not plane.product_id.endswith('quicklook'):
-                plane_ids_to_delete.append(plane.product_id)
 
-        for product_id in plane_ids_to_delete:
-            # change handling of product ids - remove the version number
-            logging.warning('Removing plane {} from {}'.format(
-                product_id, observation.observation_id))
-            observation.planes.pop(product_id)
         logging.debug('Done update.')
         return observation
     except mc.CadcException as e:
