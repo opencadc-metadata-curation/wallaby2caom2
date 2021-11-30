@@ -134,9 +134,9 @@ def accumulate_wcs(bp):
 
     # VLASS data is public, says Eric Rosolowsky via JJK May 30/18
     bp.clear('Plane.metaRelease')
-    bp.add_fits_attribute('Plane.metaRelease', 'DATE')
+    bp.set('Plane.metaRelease', '2023-01-01')
     bp.clear('Plane.dataRelease')
-    bp.add_fits_attribute('Plane.dataRelease', 'DATE')
+    bp.set('Plane.dataRelease', '2023-01-01')
 
     # artifact level
     bp.clear('Artifact.productType')

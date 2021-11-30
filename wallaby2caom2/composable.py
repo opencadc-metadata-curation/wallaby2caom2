@@ -79,16 +79,13 @@ from caom2pipe import run_composable as rc
 from caom2pipe import transfer_composable as tc
 from vos import Client
 from wallaby2caom2 import storage_name as sn
-from wallaby2caom2 import time_bounds_augmentation, quality_augmentation
-from wallaby2caom2 import position_bounds_augmentation
 from wallaby2caom2 import data_source, scrape
-from wallaby2caom2 import preview_augmentation
 
 
 WALLABY_BOOKMARK = 'wallaby_timestamp'
 
-META_VISITORS = [time_bounds_augmentation, quality_augmentation]
-DATA_VISITORS = [position_bounds_augmentation, preview_augmentation]
+META_VISITORS = []
+DATA_VISITORS = []
 
 
 def _run_single():
@@ -208,14 +205,14 @@ def _run_remote():
     vo_client = Client(vospace_certfile=config.proxy_fqn)
     clients = clc.ClientCollection(config)
     source_transfer = tc.VoFitsTransfer(vo_client, clients.data_client)
-    data_source = dsc.VaultDataSource(vo_client, config)
+    source = dsc.VaultDataSource(vo_client, config)
     name_builder = nbc.EntryBuilder(sn.WallabyName)
     return rc.run_by_todo(
         name_builder=name_builder,
         command_name=sn.APPLICATION,
         meta_visitors=META_VISITORS,
         data_visitors=DATA_VISITORS,
-        source=data_source,
+        source=source,
         store_transfer=source_transfer,
         clients=clients,
     )
