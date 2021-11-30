@@ -93,6 +93,7 @@ def test_aug_visit():
         quality_augmentation.visit(None)
 
 
+@pytest.mark.skip('')
 def test_aug_visit_position_bounds():
     test_file_id = 'VLASS1.2.ql.T24t07.J065836+563000.10.2048.v1.I.' \
                    'iter1.image.pbcor.tt0.subim'
