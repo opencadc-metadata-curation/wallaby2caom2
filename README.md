@@ -53,13 +53,11 @@ https://github.com/opencadc/collection2caom2/wiki/config.yml.
    ```
 
 1. In the working directory, place a CADC proxy certificate. The Docker image can be used to create a
-proxy certificate:
+proxy certificate as follows. You will be prompted for the password for your CADC user:
 
    ```
    user@dockerhost:<cwd># docker run --rm -ti -v ${PWD}:/usr/src/app --name wallably_run_cli wallaby_run cadc-get-cert --days-valid 10 --cert-filename /usr/src/app/cadcproxy.pem -u <your CADC username>
    ```
-
-You will be prompted for the password for your CADC user.
 
 1. To run the application:
 

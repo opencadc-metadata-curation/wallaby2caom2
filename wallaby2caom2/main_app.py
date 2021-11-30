@@ -102,41 +102,41 @@ def accumulate_wcs(bp):
     bp.set('Observation.type', 'OBJECT')
 
     # over-ride use of value from default keyword 'DATE'
-    bp.clear('Observation.metaRelease')
-    bp.add_fits_attribute('Observation.metaRelease', 'DATE-OBS')
+    #bp.clear('Observation.metaRelease')
+    #bp.add_fits_attribute('Observation.metaRelease', 'DATE-OBS')
 
-    bp.clear('Observation.target.name')
-    bp.add_fits_attribute('Observation.target.name', 'FILNAM04')
-    bp.set('Observation.target.type', 'field')
+    #bp.clear('Observation.target.name')
+    #bp.add_fits_attribute('Observation.target.name', 'FILNAM04')
+    #bp.set('Observation.target.type', 'field')
 
     # Clare Chandler via JJK - 21-08-18
-    bp.set('Observation.instrument.name', 'S-WIDAR')
+    bp.set('Observation.instrument.name', 'AKSAP')
     # From JJK - 27-08-18 - slack
-    bp.set('Observation.proposal.title', 'VLA Sky Survey')
-    bp.set('Observation.proposal.project', 'VLASS')
+    bp.set('Observation.proposal.title', 'WALLABY')
+    bp.set('Observation.proposal.project', 'ALLABY')
     bp.set('Observation.proposal.id', 'get_proposal_id(uri)')
 
     # plane level
     bp.set('Plane.calibrationLevel', '2')
     bp.clear('Plane.dataProductType')
-    bp.add_fits_attribute('Plane.dataProductType', 'TYPE')
+    bp.add_fits_attribute('Plane.dataProductType', 'CUBE')
 
     # Clare Chandler via slack - 28-08-18
     bp.clear('Plane.provenance.name')
     bp.add_fits_attribute('Plane.provenance.name', 'ORIGIN')
-    bp.set('Plane.provenance.producer', 'NRAO')
+    bp.set('Plane.provenance.producer', 'CSIRO')
     # From JJK - 27-08-18 - slack
-    bp.set('Plane.provenance.project', 'VLASS')
-    bp.clear('Plane.provenance.runID')
-    bp.add_fits_attribute('Plane.provenance.runID', 'FILNAM08')
-    bp.clear('Plane.provenance.lastExecuted')
-    bp.add_fits_attribute('Plane.provenance.lastExecuted', 'DATE')
+    bp.set('Plane.provenance.project', 'WALLABY')
+    #bp.clear('Plane.provenance.runID')
+    #bp.add_fits_attribute('Plane.provenance.runID', 'FILNAM08')
+    #bp.clear('Plane.provenance.lastExecuted')
+    #bp.add_fits_attribute('Plane.provenance.lastExecuted', 'DATE')
 
     # VLASS data is public, says Eric Rosolowsky via JJK May 30/18
     bp.clear('Plane.metaRelease')
-    bp.add_fits_attribute('Plane.metaRelease', 'DATE-OBS')
+    bp.add_fits_attribute('Plane.metaRelease', 'DATE')
     bp.clear('Plane.dataRelease')
-    bp.add_fits_attribute('Plane.dataRelease', 'DATE-OBS')
+    bp.add_fits_attribute('Plane.dataRelease', 'DATE')
 
     # artifact level
     bp.clear('Artifact.productType')
