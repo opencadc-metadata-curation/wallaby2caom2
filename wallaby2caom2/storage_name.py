@@ -79,8 +79,8 @@ __all__ = [
 ]
 COLLECTION = 'WALLABY'
 APPLICATION = 'wallaby2caom2'
-SCHEME = 'nrao'
-CADC_SCHEME = 'cadc'
+SCHEME = 'casda'
+CIRADA_SCHEME = 'cirada'
 COLLECTION_PATTERN = '*'  # TODO what are acceptable naming patterns?
 
 
@@ -106,9 +106,9 @@ class WallabyName(mc.StorageName):
             self._url = None
             self._file_name = basename(entry)
         else:
-            if temp.scheme.startswith('http'):
+            if temp.scheme.startswith('http') or temp.scheme.startswith('vos'):
                 self._url = entry
-                self._file_name = temp.path.split('/')[-1]
+                self._file_name = basename(temp.path)
             else:
                 # it's an Artifact URI
                 self._url = None
@@ -136,15 +136,6 @@ class WallabyName(mc.StorageName):
         )
 
     @property
-    def archive(self):
-        return self._archive
-
-    @property
-    def epoch(self):
-        bits = self._file_name.split('.')
-        return f'{bits[0]}.{bits[1]}'
-
-    @property
     def file_id(self):
         return self._file_id
 
@@ -158,26 +149,16 @@ class WallabyName(mc.StorageName):
         return self._file_name
 
     @property
-    def image_pointing_url(self):
-        bits = self._file_name.split('.')
-        return f'{self.tile_url}{self.epoch}.ql.{self.tile}.{bits[4]}.' \
-               f'{bits[5]}.{bits[6]}.{bits[7]}/'
-
-    @property
     def prev(self):
         return f'{self._file_id}_prev.jpg'
 
     @property
     def prev_uri(self):
-        return self._get_uri(self.prev, CADC_SCHEME)
+        return self._get_uri(self.prev, CIRADA_SCHEME)
 
     @property
     def product_id(self):
-        return self._product_id
-
-    @property
-    def rejected_url(self):
-        return f'{scrape.QL_URL}{self.epoch}/QA_REJECTED/'
+        return WallabyName.get_product_id_from_file_name(self.file_name)
 
     @property
     def scheme(self):
@@ -193,19 +174,7 @@ class WallabyName(mc.StorageName):
 
     @property
     def thumb_uri(self):
-        return self._get_uri(self.thumb, CADC_SCHEME)
-
-    @property
-    def tile(self):
-        return self._file_name.split('.')[3]
-
-    @property
-    def tile_url(self):
-        return f'{scrape.QL_URL}{self.epoch}/{self.tile}/'
-
-    @property
-    def url(self):
-        return self._url
+        return self._get_uri(self.thumb, CIRADA_SCHEME)
 
     def is_valid(self):
         return True
@@ -222,28 +191,19 @@ class WallabyName(mc.StorageName):
         """The obs id is made of the VLASS epoch, tile name, and image centre
         from the file name.
         """
-        bits = file_name.split('.')
-        obs_id = f'{bits[0]}.{bits[1]}.{bits[3]}.{bits[4]}'
+        bits = file_name.split('_')
+        obs_id = f'{bits[0]}_{bits[1]}'
         return obs_id
 
     @staticmethod
     def get_product_id_from_file_name(file_name):
-        """The product id is made of the obs id plus the string 'quicklook'."""
-        obs_id = WallabyName.get_obs_id_from_file_name(file_name)
-        return f'{obs_id}.quicklook'
+        bits = file_name.split('_')
+        return bits[2]
 
     @staticmethod
-    def get_version(entry):
-        """The parameter may be a URI, or just the file name."""
-        # file name looks like:
-        # 'VLASS1.2.ql.T20t12.J092604+383000.10.2048.v2.I.iter1.image.
-        #                'pbcor.tt0.rms.subim.fits'
-        file_name = entry
-        if '/' in entry:
-            file_name = mc.CaomName(entry).file_name
-        bits = file_name.split('.')
-        version_str = bits[7].replace('v', '')
-        return mc.to_int(version_str)
+    def get_version(file_name):
+        bits = file_name.split('_')
+        return bits[3]
 
     @staticmethod
     def remove_extensions(file_name):

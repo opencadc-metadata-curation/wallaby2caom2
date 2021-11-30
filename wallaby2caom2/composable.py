@@ -86,7 +86,8 @@ from wallaby2caom2 import data_source, scrape
 WALLABY_BOOKMARK = 'wallaby_timestamp'
 
 META_VISITORS = []
-DATA_VISITORS = [position_bounds_augmentation]
+# DATA_VISITORS = [position_bounds_augmentation]
+DATA_VISITORS = []
 
 
 def _run_single():
@@ -170,9 +171,10 @@ def _run():
     if mc.TaskType.STORE in config.task_types:
         vo_client = Client(vospace_certfile=config.proxy_fqn)
         clients = clc.ClientCollection(config)
-        source_transfer = tc.VoFitsTransfer(vo_client, clients.data_client)
+        source_transfer = tc.VoFitsTransfer(vo_client)
     name_builder = nbc.EntryBuilder(sn.WallabyName)
     return rc.run_by_todo(
+        config=config,
         name_builder=name_builder,
         command_name=sn.APPLICATION,
         meta_visitors=META_VISITORS,
@@ -204,18 +206,17 @@ def _run_remote():
     config = mc.Config()
     config.get_executors()
     vo_client = Client(vospace_certfile=config.proxy_fqn)
-    clients = clc.ClientCollection(config)
-    source_transfer = tc.VoFitsTransfer(vo_client, clients.data_client)
+    source_transfer = tc.VoFitsTransfer(vo_client)
     source = dsc.VaultDataSource(vo_client, config)
     name_builder = nbc.EntryBuilder(sn.WallabyName)
     return rc.run_by_todo(
+        config=config,
         name_builder=name_builder,
         command_name=sn.APPLICATION,
         meta_visitors=META_VISITORS,
         data_visitors=DATA_VISITORS,
         source=source,
         store_transfer=source_transfer,
-        clients=clients,
     )
 
 
