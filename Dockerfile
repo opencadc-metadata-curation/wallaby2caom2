@@ -61,4 +61,7 @@ COPY --from=builder /usr/lib/x86_64-linux-gnu/libbrotli* /usr/lib/x86_64-linux-g
 RUN useradd --create-home --shell /bin/bash cadcops
 USER cadcops
 
+RUN useradd --create-home --shell /bin/bash cadcops
+USER cadcops
+
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
