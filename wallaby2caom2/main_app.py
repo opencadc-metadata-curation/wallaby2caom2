@@ -102,6 +102,7 @@ def accumulate_wcs(bp):
     bp.set('Observation.type', 'OBJECT')
 
     # over-ride use of value from default keyword 'DATE'
+    bp.set('Observation.metaRelease', '2023-01-01')
     #bp.clear('Observation.metaRelease')
     #bp.add_fits_attribute('Observation.metaRelease', 'DATE-OBS')
 
@@ -207,6 +208,20 @@ def update(observation, **kwargs):
                                 chunk.position.resolution = (
                                     get_position_resolution(headers)
                                 )
+                            if (
+                                chunk.energy is not None
+                                and chunk.energy_axis is None
+                            ):
+                                chunk.energy_axis = chunk.naxis
+
+                if artifact.uri.startswith('vos:cirada'):
+                    old_uri = artifact.uri
+                    artifact.uri = old_uri.replace(
+                        'vos:cirada', 'vos://cadc.nrc.ca~vault/cirada'
+                    )
+                    logging.info(
+                        f'Change URI from {old_uri} to {artifact.uri}'
+                    )
 
         logging.debug('Done update.')
         return observation
