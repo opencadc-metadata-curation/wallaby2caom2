@@ -4,8 +4,7 @@ if [[ ! -e ${PWD}/config.yml ]]
 then
   cp /usr/local/.config/config.yml ${PWD}
 fi
-if [[ ! -e ${PWD}/state.yml ]]
-then
+
 if [[ ! -e ${PWD}/state.yml ]]; then
   if [[ "${@}" == "wallaby_run_state" ]]; then
     yesterday=$(date -d yesterday "+%d-%b-%Y %H:%M")
