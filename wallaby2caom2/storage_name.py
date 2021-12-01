@@ -120,6 +120,13 @@ class WallabyName(mc.StorageName):
         return '_High-Res_' in self._file_id
 
     @property
+    def lineage(self):
+        if self._vos_url is None:
+            return f'{self.product_id}/{self.file_uri}'
+        else:
+            return f'{self.product_id}/{self._vos_url}'
+
+    @property
     def prev(self):
         if '.png' in self._file_name:
             return self._file_name
