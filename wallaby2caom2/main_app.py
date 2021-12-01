@@ -151,6 +151,7 @@ def accumulate_wcs(bp):
 
     # Clare Chandler via JJK - 21-08-18
     bp.set('Chunk.energy.bandpassName', 'S-band')
+    bp.add_fits_attribute('Chunk.energy.restfrq', 'RESTFREQ')
 
 
 def get_position_resolution(header):
@@ -206,12 +207,6 @@ def update(observation, **kwargs):
                                 chunk.position.resolution = (
                                     get_position_resolution(headers)
                                 )
-                            if chunk.energy is not None:
-                                # A value of None per Chris, 2018-07-26
-                                # Set the value to None here, because the
-                                # blueprint is implemented to not set WCS
-                                # information to None
-                                chunk.energy.restfrq = None
 
         logging.debug('Done update.')
         return observation
