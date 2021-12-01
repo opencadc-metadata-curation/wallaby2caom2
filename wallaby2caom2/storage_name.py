@@ -101,6 +101,7 @@ class WallabyName(mc.StorageName):
     ):
         self._collection = COLLECTION
         self._entry = entry.replace('.header', '')
+        self._vos_url = None
         temp = urlparse(entry.replace('.header', ''))
         if temp.scheme == '':
             self._url = None
@@ -109,6 +110,7 @@ class WallabyName(mc.StorageName):
             if temp.scheme.startswith('http') or temp.scheme.startswith('vos'):
                 self._url = entry.replace('.header', '')
                 self._file_name = basename(temp.path)
+                self._vos_url = entry.replace('.header', '')
             else:
                 # it's an Artifact URI
                 self._url = None
@@ -141,12 +143,18 @@ class WallabyName(mc.StorageName):
 
     @property
     def file_uri(self):
-        """No .gz extension, unlike the default implementation."""
         return self._get_uri(self._file_name, SCHEME)
 
     @property
     def file_name(self):
         return self._file_name
+
+    @property
+    def lineage(self):
+        if self._vos_url is None:
+            return f'{self.product_id}/{self.file_uri}'
+        else:
+            return f'{self.product_id}/{self._vos_url}'
 
     @property
     def prev(self):

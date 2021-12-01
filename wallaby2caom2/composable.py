@@ -79,14 +79,12 @@ from caom2pipe import run_composable as rc
 from caom2pipe import transfer_composable as tc
 from vos import Client
 from wallaby2caom2 import storage_name as sn
-from wallaby2caom2 import position_bounds_augmentation
 from wallaby2caom2 import data_source, scrape
 
 
 WALLABY_BOOKMARK = 'wallaby_timestamp'
 
 META_VISITORS = []
-# DATA_VISITORS = [position_bounds_augmentation]
 DATA_VISITORS = []
 
 

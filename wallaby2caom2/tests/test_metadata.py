@@ -72,9 +72,11 @@ from mock import patch
 from datetime import datetime
 from wallaby2caom2 import metadata
 
+import pytest
 import test_scrape
 
 
+@pytest.mark.skip('')
 @patch('caom2pipe.manage_composable.query_endpoint_session')
 def test_cache(query_endpoint_mock):
     query_endpoint_mock.side_effect = test_scrape._query_endpoint

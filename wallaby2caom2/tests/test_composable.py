@@ -68,11 +68,11 @@
 #
 
 import os
+import pytest
 
 from datetime import datetime, timezone, timedelta
 from mock import patch, Mock
 
-from cadctap import CadcTapClient
 from caom2pipe import execute_composable as ec
 from caom2pipe import manage_composable as mc
 from caom2utils import get_gen_proc_arg_parser
@@ -85,18 +85,28 @@ import test_scrape
 STATE_FILE = os.path.join(test_main_app.TEST_DATA_DIR, 'state.yml')
 
 
-@patch('caom2pipe.manage_composable.query_endpoint_session')
-@patch('caom2pipe.execute_composable.CaomExecute._fits2caom2_cmd')
+@patch('cadcutils.net.ws.WsCapabilities.get_access_url')
+@patch('caom2pipe.execute_composable.CaomExecute._invoke_to_caom2')
 @patch('caom2pipe.client_composable.CAOM2RepoClient')
-@patch('caom2pipe.client_composable.StorageClientWrapper')
-def test_run(
-    data_client_mock, repo_mock, exec_mock, query_endpoint_mock
+@patch('wallaby2caom2.composable.Client')
+def test_run_remote(
+    data_client_mock, repo_mock, exec_mock, access_mock
 ):
-    query_endpoint_mock.side_effect = test_scrape._query_endpoint
+    test_f_name = 'WALLABY_J100342-270137_AverageModelCube_v2.fits'
+    test_uri = f'vos:goliaths/test/{test_f_name}'
+    access_mock.return_value = 'https://localhost'
     repo_mock.return_value.read.side_effect = _mock_repo_read
     repo_mock.return_value.create.side_effect = Mock()
     repo_mock.return_value.update.side_effect = _mock_repo_update
-    data_client_mock.return_value.get_file_info.side_effect = (
+    data_client_mock.return_value.listdir.return_value = [test_f_name]
+    test_node = type('', (), {})()
+    test_node.props = {
+        'length': 42,
+        'MD5': '1234',
+    }
+    test_node.uri = test_uri
+    data_client_mock.return_value.get_node.return_value = test_node
+    data_client_mock.return_value.info.side_effect = (
         _mock_get_file_info
     )
 
@@ -108,24 +118,42 @@ def test_run(
     test_config = mc.Config()
     test_config.get_executors()
 
-    test_f_name = 'VLASS1.2.ql.T07t13.J083838-153000.10.2048.v1.I.iter1.' \
-                  'image.pbcor.tt0.subim.fits'
-    with open(test_config.work_fqn, 'w') as f:
-        f.write(f'{test_f_name}\n')
-
-    # the equivalent of calling work.init_web_log()
-    scrape.web_log_content['abc'] = 123
-
     try:
         # execution
-        test_result = composable._run()
+        test_result = composable._run_remote()
         assert test_result == 0, 'wrong result'
     finally:
+        for ii in [
+            test_config.work_fqn,
+            test_config.failure_fqn,
+            test_config.rejected_fqn,
+            test_config.report_fqn,
+            test_config.retry_fqn,
+            test_config.success_fqn,
+        ]:
+            if os.path.exists(ii):
+                os.unlink(ii)
         os.getcwd = getcwd_orig
-        if os.path.exists(test_config.work_fqn):
-            os.unlink(test_config.work_fqn)
+
+    assert exec_mock.called, 'expect exec call'
+    exec_mock.assert_called_with(
+        'wallaby2caom2 --verbose --cert '
+        '/usr/src/app/wallaby2caom2/wallaby2caom2/tests/data/test_proxy.pem '
+        '--observation TEST WALLABY_J100342-270137 --out '
+        '/usr/src/app/wallaby2caom2/wallaby2caom2/tests/data/'
+        'WALLABY_J100342-270137/WALLABY_J100342-270137.xml  --plugin '
+        '/usr/local/lib/python3.9/site-packages/wallaby2caom2/'
+        'wallaby2caom2.py --module '
+        '/usr/local/lib/python3.9/site-packages/wallaby2caom2/'
+        'wallaby2caom2.py --lineage '
+        'AverageModelCube/vos:goliaths/test/'
+        f'WALLABY_J100342-270137_AverageModelCube_v2.fits ',
+        '/usr/local/lib/python3.9/site-packages/wallaby2caom2/'
+        'wallaby2caom2.py',
+    ), 'wrong exec call args'
 
 
+@pytest.mark.skip('')
 @patch('wallaby2caom2.to_caom2')
 @patch('caom2pipe.manage_composable.query_endpoint_session')
 @patch('caom2pipe.client_composable.CAOM2RepoClient')
@@ -167,11 +195,11 @@ def test_store():
     test_config = mc.Config()
     test_config.logging_level = 'ERROR'
     test_config.working_directory = '/tmp'
+    test_f_name = 'WALLABY_J100342-270137_AverageModelCube_v2.fits'
     test_url = (
-        'https://archive-new.nrao.edu/vlass/quicklook/VLASS2.1/'
-        'T10t12/VLASS2.1.ql.T10t12.J073401-033000.10.2048.v1/'
-        'VLASS2.1.ql.T10t12.J073401-033000.10.2048.v1.I.iter1.image.'
-        'pbcor.tt0.rms.subim.fits'
+        f'vos:cirada/emission/PilotFieldReleases_Jun2021/'
+        f'KinematicModels/Wallaby_Hydra_DR2_KinematicModels_v2/'
+        f'WALLABY_J100342-270137/{test_f_name}'
     )
     test_storage_name = WallabyName(test_url)
     transferrer = Mock()
@@ -183,25 +211,21 @@ def test_store():
     test_subject.execute(None)
     assert cadc_data_client.put.called, 'expect a call'
     cadc_data_client.put.assert_called_with(
-        '/tmp/VLASS2.1.T10t12.J073401-033000',
-        f'{SCHEME}:{COLLECTION}/VLASS2.1.ql.T10t12.J073401-033000.10.2048.'
-        f'v1.I.iter1.image.pbcor.tt0.rms.subim.fits',
+        '/tmp/WALLABY_J100342-270137',
+        f'{SCHEME}:{COLLECTION}/{test_f_name}',
         None,
     ), 'wrong put args'
     assert transferrer.get.called, 'expect a transfer call'
-    test_f_name = 'VLASS2.1.ql.T10t12.J073401-033000.10.2048.v1.I.iter1.' \
-                  'image.pbcor.tt0.rms.subim.fits'
     transferrer.get.assert_called_with(
-        f'https://archive-new.nrao.edu/vlass/quicklook/VLASS2.1/T10t12/'
-        f'VLASS2.1.ql.T10t12.J073401-033000.10.2048.v1/{test_f_name}',
-        f'/tmp/VLASS2.1.T10t12.J073401-033000/{test_f_name}',
+        test_url,
+        f'/tmp/WALLABY_J100342-270137/{test_f_name}',
     ), 'wrong transferrer args'
 
 
-def _cmd_direct_mock():
+def _cmd_direct_mock(ign1, ign2):
     from caom2 import SimpleObservation, Algorithm
     obs = SimpleObservation(
-        observation_id='VLASS1.2.T07t13.J083838-153000',
+        observation_id='WALLABY_J100342-270137',
         collection=COLLECTION,
         algorithm=Algorithm(name='testing'),
     )
@@ -209,7 +233,7 @@ def _cmd_direct_mock():
         obs,
         os.path.join(
             test_main_app.TEST_DATA_DIR,
-            'logs/VLASS1.2.T07t13.J083838-153000.xml',
+            'WALLABY_J100342-270137/WALLABY_J100342-270137.xml',
         ),
     )
 
@@ -218,9 +242,8 @@ def _mock_service_query():
     return None
 
 
-def _mock_get_file_info(arg1, arg2):
-    # arg2 is the file name
-    return {'name': arg2}
+def _mock_get_file_info(arg1):
+    return {'name': arg1.split('/')[-1]}
 
 
 def _mock_get_file():

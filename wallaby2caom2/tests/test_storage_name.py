@@ -81,9 +81,8 @@ def test_storage_name():
     )
     expected_obs_id = 'WALLABY_J100342-270137'
     expected_fid = basename(test_url).replace('.fits', '')
-    ts1 = sn.WallabyName(test_url)
-    ts2 = sn.WallabyName(test_f_name)
-    for ts in [ts1, ts2]:
+    for ii in [test_url, test_f_name]:
+        ts = sn.WallabyName(ii)
         assert ts.obs_id == expected_obs_id, 'wrong obs id'
         assert ts.file_name == basename(test_url), 'wrong fname'
         assert ts.file_id == expected_fid, 'wrong fid'
@@ -102,9 +101,12 @@ def test_storage_name():
         assert (
             ts.thumb_uri == f'{sn.CIRADA_SCHEME}:{sn.COLLECTION}/{ts.thumb}'
         ), 'wrong thumbnail uri'
-        assert (
-            ts.lineage
-            == f'{ts.product_id}/{sn.SCHEME}:{sn.COLLECTION}/'
-               f'{basename(test_url)}'
-        ), 'wrong lineage'
+        if ii is test_url:
+            assert ts.lineage == f'{ts.product_id}/{test_url}', 'wrong lineage'
+        else:
+            assert (
+                ts.lineage
+                == f'{ts.product_id}/{sn.SCHEME}:{sn.COLLECTION}/'
+                   f'{basename(test_url)}'
+            ), 'wrong lineage'
         assert len(ts.source_names) == 1, 'wrong length'
