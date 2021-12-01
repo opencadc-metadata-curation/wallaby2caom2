@@ -10,7 +10,7 @@ echo "Get image ${IMAGE}"
 docker pull ${IMAGE}
 
 echo "Run image ${IMAGE}"
-docker run --rm --name ${COLLECTION}_todo -v ${PWD}:/usr/src/app/ --user $(id -u):$(id -g) -e HOME=/usr/src/app ${IMAGE} ${COLLECTION}_run || exit $?
+docker run --rm --name ${COLLECTION}_todo -v ${PWD}:/usr/src/app/ --user $(id -u):$(id -g) -e HOME=/usr/src/app ${IMAGE} ${COLLECTION}_run_remote || exit $?
 
 date
 exit 0

@@ -6,7 +6,7 @@ RUN apt-get update --no-install-recommends && \
         git \
         wget && \
     rm -rf /var/lib/apt/lists/ /tmp/* /var/tmp/*
- 
+    
 RUN pip install bs4 \
     cadcdata \
     cadctap \
@@ -56,5 +56,8 @@ RUN git clone https://github.com/${CAOM2_REPO}/caom2tools.git && \
 RUN pip install git+https://github.com/${OPENCADC_REPO}/caom2pipe@${OPENCADC_BRANCH}#egg=caom2pipe
   
 RUN pip install git+https://github.com/${PIPE_REPO}/wallaby2caom2@${PIPE_BRANCH}#egg=wallaby2caom2
+
+RUN useradd --create-home --shell /bin/bash cadcops
+USER cadcops
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
