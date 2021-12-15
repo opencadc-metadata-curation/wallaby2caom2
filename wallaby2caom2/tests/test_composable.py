@@ -77,27 +77,23 @@ from caom2pipe import execute_composable as ec
 from caom2pipe import manage_composable as mc
 from caom2utils import get_gen_proc_arg_parser
 from caom2 import SimpleObservation, Algorithm
-from wallaby2caom2 import composable, WallabyName, COLLECTION, scrape
-from wallaby2caom2 import SCHEME, APPLICATION
+from wallaby2caom2 import composable, storage_name
 import test_main_app
 import test_scrape
 
 STATE_FILE = os.path.join(test_main_app.TEST_DATA_DIR, 'state.yml')
 
 
+@patch('caom2pipe.reader_composable.VaultReader')
 @patch('cadcutils.net.ws.WsCapabilities.get_access_url')
-@patch('caom2pipe.execute_composable.CaomExecute._invoke_to_caom2')
-@patch('caom2pipe.client_composable.CAOM2RepoClient')
-@patch('wallaby2caom2.composable.Client')
+@patch('caom2pipe.execute_composable.OrganizeExecutes.do_one')
+@patch('wallaby2caom2.composable.Client', autospec=True)
 def test_run_remote(
-    data_client_mock, repo_mock, exec_mock, access_mock
+    data_client_mock, exec_mock, access_mock, reader_mock
 ):
     test_f_name = 'WALLABY_J100342-270137_AverageModelCube_v2.fits'
     test_uri = f'vos:goliaths/test/{test_f_name}'
     access_mock.return_value = 'https://localhost'
-    repo_mock.return_value.read.side_effect = _mock_repo_read
-    repo_mock.return_value.create.side_effect = Mock()
-    repo_mock.return_value.update.side_effect = _mock_repo_update
     data_client_mock.return_value.listdir.return_value = [test_f_name]
     test_node = type('', (), {})()
     test_node.props = {
@@ -106,11 +102,8 @@ def test_run_remote(
     }
     test_node.uri = test_uri
     data_client_mock.return_value.get_node.return_value = test_node
-    data_client_mock.return_value.info.side_effect = (
-        _mock_get_file_info
-    )
 
-    exec_mock.side_effect = _cmd_direct_mock
+    exec_mock.return_value = 0
 
     getcwd_orig = os.getcwd
     os.getcwd = Mock(return_value=test_main_app.TEST_DATA_DIR)
@@ -136,21 +129,21 @@ def test_run_remote(
         os.getcwd = getcwd_orig
 
     assert exec_mock.called, 'expect exec call'
-    exec_mock.assert_called_with(
-        'wallaby2caom2 --verbose --cert '
-        '/usr/src/app/wallaby2caom2/wallaby2caom2/tests/data/test_proxy.pem '
-        '--observation TEST WALLABY_J100342-270137 --out '
-        '/usr/src/app/wallaby2caom2/wallaby2caom2/tests/data/'
-        'WALLABY_J100342-270137/WALLABY_J100342-270137.xml  --plugin '
-        '/usr/local/lib/python3.9/site-packages/wallaby2caom2/'
-        'wallaby2caom2.py --module '
-        '/usr/local/lib/python3.9/site-packages/wallaby2caom2/'
-        'wallaby2caom2.py --lineage '
-        'AverageModelCube/vos:goliaths/test/'
-        f'WALLABY_J100342-270137_AverageModelCube_v2.fits ',
-        '/usr/local/lib/python3.9/site-packages/wallaby2caom2/'
-        'wallaby2caom2.py',
-    ), 'wrong exec call args'
+    test_parameter = exec_mock.call_args.args[0]
+    assert isinstance(test_parameter, storage_name.WallabyName), 'wromg type'
+    assert test_parameter.obs_id == 'WALLABY_J100342-270137'
+    assert (
+        test_parameter.source_names[0] ==
+        'vos:goliaths/test/WALLABY_J100342-270137_AverageModelCube_v2.fits'
+    ), 'wrong source name'
+    assert (
+        test_parameter.destination_uris[0] ==
+        'cadc:WALLABY/WALLABY_J100342-270137_AverageModelCube_v2.fits'
+    ), 'wrong destination uri'
+    assert (
+        test_parameter.file_uri ==
+        'cadc:WALLABY/WALLABY_J100342-270137_AverageModelCube_v2.fits'
+    ), 'wrong file uri'
 
 
 @pytest.mark.skip('')
@@ -201,18 +194,19 @@ def test_store():
         f'KinematicModels/Wallaby_Hydra_DR2_KinematicModels_v2/'
         f'WALLABY_J100342-270137/{test_f_name}'
     )
-    test_storage_name = WallabyName(test_url)
+    test_storage_name = storage_name.WallabyName(test_url)
     transferrer = Mock()
     cadc_data_client = Mock()
     observable = mc.Observable(
         mc.Rejected('/tmp/rejected.yml'), mc.Metrics(test_config))
-    test_subject = ec.Store(test_config, test_storage_name, APPLICATION,
-                            cadc_data_client, observable, transferrer)
+    test_subject = ec.Store(
+        test_config, test_storage_name,
+        cadc_data_client, observable, transferrer)
     test_subject.execute(None)
     assert cadc_data_client.put.called, 'expect a call'
     cadc_data_client.put.assert_called_with(
         '/tmp/WALLABY_J100342-270137',
-        f'{SCHEME}:{COLLECTION}/{test_f_name}',
+        f'{storage_name.SCHEME}:{storage_name.COLLECTION}/{test_f_name}',
         None,
     ), 'wrong put args'
     assert transferrer.get.called, 'expect a transfer call'
@@ -220,22 +214,6 @@ def test_store():
         test_url,
         f'/tmp/WALLABY_J100342-270137/{test_f_name}',
     ), 'wrong transferrer args'
-
-
-def _cmd_direct_mock(ign1, ign2):
-    from caom2 import SimpleObservation, Algorithm
-    obs = SimpleObservation(
-        observation_id='WALLABY_J100342-270137',
-        collection=COLLECTION,
-        algorithm=Algorithm(name='testing'),
-    )
-    mc.write_obs_to_file(
-        obs,
-        os.path.join(
-            test_main_app.TEST_DATA_DIR,
-            'WALLABY_J100342-270137/WALLABY_J100342-270137.xml',
-        ),
-    )
 
 
 def _mock_service_query():
@@ -263,9 +241,6 @@ def _mock_get_cadc_headers(archive, file_id):
 
 
 def _mock_x(archive, file_id, b, fhead):
-    import logging
-    logging.error(f'{archive} {file_id} {fhead}')
-    logging.error(f'\n\n\ncalled called called \n\n\n')
     from astropy.io import fits
 
     x = """SIMPLE  =                    T / Written by IDL:  Fri Oct  6 01:48:35 2017

@@ -71,13 +71,10 @@ import os
 import pytest
 import shutil
 
-from mock import Mock, patch
-
-from caom2 import Status
 from caom2pipe import manage_composable as mc
 
 from wallaby2caom2 import time_bounds_augmentation, quality_augmentation
-from wallaby2caom2 import position_bounds_augmentation, scrape
+from wallaby2caom2 import position_bounds_augmentation
 from wallaby2caom2 import storage_name as sn
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))

@@ -101,12 +101,4 @@ def test_storage_name():
         assert (
             ts.thumb_uri == f'{sn.CIRADA_SCHEME}:{sn.COLLECTION}/{ts.thumb}'
         ), 'wrong thumbnail uri'
-        if ii is test_url:
-            assert ts.lineage == f'{ts.product_id}/{test_url}', 'wrong lineage'
-        else:
-            assert (
-                ts.lineage
-                == f'{ts.product_id}/{sn.SCHEME}:{sn.COLLECTION}/'
-                   f'{basename(test_url)}'
-            ), 'wrong lineage'
         assert len(ts.source_names) == 1, 'wrong length'

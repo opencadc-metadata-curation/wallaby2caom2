@@ -33,11 +33,9 @@
       </caom2:provenance>
       <caom2:artifacts>
         <caom2:artifact caom2:id="c76d68b0-a2fa-4548-a461-b2de130a5f72">
-          <caom2:uri>casda:WALLABY/WALLABY_J100342-270137_AverageModelCube_v2.fits</caom2:uri>
+          <caom2:uri>cadc:WALLABY/WALLABY_J100342-270137_AverageModelCube_v2.fits</caom2:uri>
           <caom2:productType>science</caom2:productType>
           <caom2:releaseType>data</caom2:releaseType>
-          <caom2:contentType>application/fits</caom2:contentType>
-          <caom2:contentLength>55425600</caom2:contentLength>
           <caom2:contentChecksum>md5:ae2a33238c5051611133e7090560fd8a</caom2:contentChecksum>
           <caom2:parts>
             <caom2:part caom2:id="34519a52-3f02-4b2a-9777-55ef9027944b">

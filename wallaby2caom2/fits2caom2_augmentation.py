@@ -3,7 +3,7 @@
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 #
-#  (c) 2018.                            (c) 2018.
+#  (c) 2021.                            (c) 2021.
 #  Government of Canada                 Gouvernement du Canada
 #  National Research Council            Conseil national de recherches
 #  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -62,67 +62,67 @@
 #  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
 #                                       <http://www.gnu.org/licenses/>.
 #
-#  $Revision: 4 $
+#  : 4 $
 #
 # ***********************************************************************
 #
 
-from os.path import dirname, exists, join, realpath
+import logging
 
-from cadcdata import FileInfo
-from caom2pipe import astro_composable as ac
-from caom2pipe import manage_composable as mc
-from caom2pipe import reader_composable as rdc
-from wallaby2caom2 import storage_name, fits2caom2_augmentation
-from caom2.diff import get_differences
-
-import glob
+from caom2 import SimpleObservation, DerivedObservation, Algorithm
+from caom2utils import ObsBlueprint, GenericParser, FitsParser
+from wallaby2caom2 import main_app, storage_name
 
 
-TEST_URI = 'ad:TEST_COLLECTION/test_file.fits'
+class Fits2caom2Visitor:
+    def __init__(self, observation, **kwargs):
+        self._observation = observation
+        self._storage_name = kwargs.get('storage_name')
+        self._metadata_reader = kwargs.get('metadata_reader')
+        self._dump_config = False
+        self._logger = logging.getLogger(self.__class__.__name__)
 
-THIS_DIR = dirname(realpath(__file__))
-TEST_DATA_DIR = join(THIS_DIR, 'data')
-PLUGIN = join(dirname(THIS_DIR), 'main_app.py')
+    def visit(self):
+        for uri, file_info in self._metadata_reader.file_info.items():
+            headers = self._metadata_reader.headers.get(uri)
+            telescope_data = main_app.Telescope(uri, headers)
+            blueprint = ObsBlueprint(instantiated_class=telescope_data)
+            telescope_data.accumulate_wcs(blueprint)
+
+            if len(headers) == 0:
+                parser = GenericParser(blueprint, uri)
+            else:
+                parser = FitsParser(headers, blueprint, uri)
+
+            if self._dump_config:
+                print(f'Blueprint for {uri}: {blueprint}')
+
+            if self._observation is None:
+                if blueprint._get('DerivedObservation.members') is None:
+                    self._logger.debug('Build a SimpleObservation')
+                    self._observation = SimpleObservation(
+                        collection=storage_name.COLLECTION,
+                        observation_id=self._storage_name.obs_id,
+                        algorithm=Algorithm('exposure'),
+                    )
+                else:
+                    self._logger.debug('Build a DerivedObservation')
+                    self._observation = DerivedObservation(
+                        collection=self._storage_name.collection,
+                        observation_id=self._storage_name.obs_id,
+                        algorithm=Algorithm('composite'),
+                    )
+
+            parser.augment_observation(
+                observation=self._observation,
+                artifact_uri=uri,
+                product_id=self._storage_name.product_id,
+            )
+
+            self._observation = telescope_data.update(self._observation)
+        return self._observation
 
 
-def pytest_generate_tests(metafunc):
-    obs_id_list = glob.glob(f'{TEST_DATA_DIR}/*.fits.header')
-    metafunc.parametrize('test_name', obs_id_list)
-
-
-def test_visitor(test_name):
-    wallaby_name = storage_name.WallabyName(
-        test_name.replace('.header', ''),
-    )
-    file_info = FileInfo(
-        id=wallaby_name.file_uri, file_type='application/fits'
-    )
-    headers = ac.make_headers_from_file(test_name)
-    metadata_reader = rdc.FileMetadataReader()
-    metadata_reader._headers = {wallaby_name.file_uri: headers}
-    metadata_reader._file_info = {wallaby_name.file_uri: file_info}
-    kwargs = {
-        'storage_name': wallaby_name,
-        'metadata_reader': metadata_reader,
-    }
-    observation = None
-    input_file = f'{TEST_DATA_DIR}/in.{wallaby_name.product_id}.fits.xml'
-    if exists(input_file):
-        observation = mc.read_obs_from_file(input_file)
-    observation = fits2caom2_augmentation.visit(observation, **kwargs)
-
-    expected_fqn = (
-        f'{TEST_DATA_DIR}/{wallaby_name.obs_id}.expected.xml'
-    )
-    expected = mc.read_obs_from_file(expected_fqn)
-    compare_result = get_differences(expected, observation)
-    if compare_result is not None:
-        actual_fqn = expected_fqn.replace('expected', 'actual')
-        mc.write_obs_to_file(observation, actual_fqn)
-        compare_text = '\n'.join([r for r in compare_result])
-        msg = (
-            f'Differences found in observation {expected.observation_id}\n'
-            f'{compare_text}'
-        )
-        raise AssertionError(msg)
+def visit(observation, **kwargs):
+    s = Fits2caom2Visitor(observation, **kwargs)
+    return s.visit()

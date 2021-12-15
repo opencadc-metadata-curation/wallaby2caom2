@@ -79,7 +79,7 @@ __all__ = [
 ]
 COLLECTION = 'WALLABY'
 APPLICATION = 'wallaby2caom2'
-SCHEME = 'casda'
+SCHEME = 'cadc'
 CIRADA_SCHEME = 'cirada'
 COLLECTION_PATTERN = '*'  # TODO what are acceptable naming patterns?
 
@@ -133,7 +133,6 @@ class WallabyName(mc.StorageName):
             f'   file_name: {self.file_name}\n'
             f'source_names: {self.source_names}\n'
             f'    file_uri: {self.file_uri}\n'
-            f'     lineage: {self.lineage}\n'
             f'         url: {self.url}\n'
         )
 
@@ -148,13 +147,6 @@ class WallabyName(mc.StorageName):
     @property
     def file_name(self):
         return self._file_name
-
-    @property
-    def lineage(self):
-        if self._vos_url is None:
-            return f'{self.product_id}/{self.file_uri}'
-        else:
-            return f'{self.product_id}/{self._vos_url}'
 
     @property
     def prev(self):

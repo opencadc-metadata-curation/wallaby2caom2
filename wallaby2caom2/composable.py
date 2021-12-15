@@ -75,16 +75,17 @@ from caom2pipe import client_composable as clc
 from caom2pipe import data_source_composable as dsc
 from caom2pipe import manage_composable as mc
 from caom2pipe import name_builder_composable as nbc
+from caom2pipe import reader_composable as rdc
 from caom2pipe import run_composable as rc
 from caom2pipe import transfer_composable as tc
 from vos import Client
 from wallaby2caom2 import storage_name as sn
-from wallaby2caom2 import data_source, scrape
+from wallaby2caom2 import data_source, scrape, fits2caom2_augmentation
 
 
 WALLABY_BOOKMARK = 'wallaby_timestamp'
 
-META_VISITORS = []
+META_VISITORS = [fits2caom2_augmentation]
 DATA_VISITORS = []
 
 
@@ -94,7 +95,6 @@ def _run_single():
     wallaby_name = builder.build(sys.argv[1])
     return rc.run_single(
         storage_name=wallaby_name,
-        command_name=sn.APPLICATION,
         meta_visitors=META_VISITORS,
         data_visitors=DATA_VISITORS,
         store_transfer=tc.HttpTransfer(),
@@ -132,7 +132,6 @@ def _run_state():
     name_builder = nbc.EntryBuilder(sn.WallabyName)
     return rc.run_by_state(
         config=config,
-        command_name=sn.APPLICATION,
         bookmark_name=WALLABY_BOOKMARK,
         meta_visitors=META_VISITORS,
         data_visitors=DATA_VISITORS,
@@ -165,20 +164,23 @@ def _run():
     config = mc.Config()
     config.get_executors()
     clients = None
+    reader = None
     source_transfer = None
+    vo_client = Client(vospace_certfile=config.proxy_fqn)
     if mc.TaskType.STORE in config.task_types:
-        vo_client = Client(vospace_certfile=config.proxy_fqn)
         clients = clc.ClientCollection(config)
         source_transfer = tc.VoFitsTransfer(vo_client)
+    else:
+        reader = rdc.VaultReader(vo_client)
     name_builder = nbc.EntryBuilder(sn.WallabyName)
     return rc.run_by_todo(
         config=config,
         name_builder=name_builder,
-        command_name=sn.APPLICATION,
         meta_visitors=META_VISITORS,
         data_visitors=DATA_VISITORS,
         store_transfer=source_transfer,
         clients=clients,
+        metadata_reader=reader,
     )
 
 
@@ -207,14 +209,15 @@ def _run_remote():
     source_transfer = tc.VoFitsTransfer(vo_client)
     source = dsc.VaultDataSource(vo_client, config)
     name_builder = nbc.EntryBuilder(sn.WallabyName)
+    reader = rdc.VaultReader(vo_client)
     return rc.run_by_todo(
         config=config,
         name_builder=name_builder,
-        command_name=sn.APPLICATION,
         meta_visitors=META_VISITORS,
         data_visitors=DATA_VISITORS,
         source=source,
         store_transfer=source_transfer,
+        metadata_reader=reader,
     )
 
 

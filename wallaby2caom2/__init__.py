@@ -2,6 +2,7 @@ from .composable import *  # noqa
 from .data_source import *  # noqa
 from .main_app import *  # noqa
 from .metadata import *  # noqa
+from .fits2caom2_augmentation import *  # noqa
 from .position_bounds_augmentation import *  # noqa
 from .preview_augmentation import *  # noqa
 from .quality_augmentation import *  # noqa

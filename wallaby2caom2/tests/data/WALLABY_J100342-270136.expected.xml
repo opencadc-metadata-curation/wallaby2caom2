@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<caom2:Observation xmlns:caom2="http://www.opencadc.org/caom2/xml/v2.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="caom2:SimpleObservation" caom2:id="c76d68b0-a2fa-4548-a461-b2de130a5f70" caom2:metaProducer="wallaby2caom2/0.1.0">
+<caom2:Observation xmlns:caom2="http://www.opencadc.org/caom2/xml/v2.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="caom2:SimpleObservation" caom2:id="c77d68b0-a2fa-4548-a461-b2de130a5f70" caom2:metaProducer="wallaby2caom2/0.1.0">
   <caom2:collection>WALLABY</caom2:collection>
   <caom2:observationID>WALLABY_J100342-270136</caom2:observationID>
   <caom2:metaRelease>2023-01-01T00:00:00.000</caom2:metaRelease>
@@ -17,7 +17,7 @@
     <caom2:name>AKSAP</caom2:name>
   </caom2:instrument>
   <caom2:planes>
-    <caom2:plane caom2:id="c76d68b0-a2fa-4548-a461-b2de130a5f71">
+    <caom2:plane caom2:id="c77d68b0-a2fa-4548-a461-b2de130a5f71">
       <caom2:productID>FittedData</caom2:productID>
       <caom2:metaRelease>2023-01-01T00:00:00.000</caom2:metaRelease>
       <caom2:dataRelease>2023-01-01T00:00:00.000</caom2:dataRelease>
@@ -29,18 +29,16 @@
         <caom2:producer>CSIRO</caom2:producer>
       </caom2:provenance>
       <caom2:artifacts>
-        <caom2:artifact caom2:id="c76d68b0-a2fa-4548-a461-b2de130a5f72">
-          <caom2:uri>casda:WALLABY/WALLABY_J100342-270136_FittedData_v2.fits</caom2:uri>
+        <caom2:artifact caom2:id="c77d68b0-a2fa-4548-a461-b2de130a5f72">
+          <caom2:uri>cadc:WALLABY/WALLABY_J100342-270136_FittedData_v2.fits</caom2:uri>
           <caom2:productType>science</caom2:productType>
           <caom2:releaseType>data</caom2:releaseType>
-          <caom2:contentType>application/fits</caom2:contentType>
-          <caom2:contentLength>55425600</caom2:contentLength>
           <caom2:contentChecksum>md5:ae2a33238c5051611133e7090560fd8a</caom2:contentChecksum>
           <caom2:parts>
-            <caom2:part caom2:id="34519a52-3f02-4b2a-9777-55ef9027944b">
+            <caom2:part caom2:id="34619a52-3f02-4b2a-9777-55ef9027944b">
               <caom2:name>0</caom2:name>
               <caom2:chunks>
-                <caom2:chunk caom2:id="f937f2b3-1510-4c3b-b88e-2d0c94475ba7" caom2:metaProducer="wallaby2caom2/0.1.0">
+                <caom2:chunk caom2:id="f947f2b3-1510-4c3b-b88e-2d0c94475ba7" caom2:metaProducer="wallaby2caom2/0.1.0">
                   <caom2:naxis>3</caom2:naxis>
                   <caom2:positionAxis1>1</caom2:positionAxis1>
                   <caom2:positionAxis2>2</caom2:positionAxis2>
