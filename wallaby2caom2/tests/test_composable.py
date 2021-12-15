@@ -101,6 +101,8 @@ def test_run_remote(
         'MD5': '1234',
     }
     test_node.uri = test_uri
+    test_node.type = 'vos:DataNode'
+    test_node.node_list = [test_node]
     data_client_mock.return_value.get_node.return_value = test_node
 
     exec_mock.return_value = 0
