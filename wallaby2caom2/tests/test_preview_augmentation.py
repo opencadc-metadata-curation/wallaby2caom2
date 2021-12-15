@@ -67,6 +67,8 @@
 # ***********************************************************************
 #
 
+import pytest
+
 from caom2pipe import manage_composable as mc
 from wallaby2caom2 import preview_augmentation
 from wallaby2caom2 import storage_name as sn
@@ -75,6 +77,7 @@ from mock import patch
 from test_main_app import TEST_DATA_DIR
 
 
+@pytest.mark.skip('')
 @patch('cadcutils.net.ws.WsCapabilities.get_access_url')
 def test_preview_augmentation(access_mock):
     access_mock.return_value = 'https://localhost'

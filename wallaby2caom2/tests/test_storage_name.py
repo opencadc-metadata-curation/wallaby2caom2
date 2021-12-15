@@ -67,82 +67,38 @@
 # ***********************************************************************
 #
 
-from caom2pipe import name_builder_composable as nbc
+from os.path import basename
+
 from wallaby2caom2 import storage_name as sn
 
 
 def test_storage_name():
-    test_bit = (
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1.I.iter1.image.pbcor.tt0'
-    )
+    test_f_name = 'WALLABY_J100342-270137_AverageModelCube_v2.fits'
     test_url = (
-        f'https://archive-new.nrao.edu/vlass/quicklook/VLASS1.2/T23t09/'
-        f'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1/{test_bit}.subim.fits'
+        f'vos:cirada/emission/PilotFieldReleases_Jun2021/'
+        f'KinematicModels/Wallaby_Hydra_DR2_KinematicModels_v2/'
+        f'WALLABY_J100342-270137/{test_f_name}'
     )
-    ts1 = sn.WallabyName(test_url)
-    ts2 = sn.WallabyName(f'{test_bit}.subim.fits')
-    for ts in [ts1, ts2]:
-        assert ts.obs_id == 'VLASS1.2.T23t09.J083851+483000', 'wrong obs id'
-        assert ts.file_name == f'{test_bit}.subim.fits', 'wrong fname'
-        assert ts.file_id == f'{test_bit}.subim', 'wrong fid'
+    expected_obs_id = 'WALLABY_J100342-270137'
+    expected_fid = basename(test_url).replace('.fits', '')
+    for ii in [test_url, test_f_name]:
+        ts = sn.WallabyName(ii)
+        assert ts.obs_id == expected_obs_id, 'wrong obs id'
+        assert ts.file_name == basename(test_url), 'wrong fname'
+        assert ts.file_id == expected_fid, 'wrong fid'
         assert (
-            ts.file_uri == f'{sn.SCHEME}:{sn.COLLECTION}/{test_bit}.subim.fits'
+            ts.file_uri == f'{sn.SCHEME}:{sn.COLLECTION}/{basename(test_url)}'
         ), 'wrong uri'
+        assert ts.model_file_name == f'{expected_obs_id}.xml', 'wrong model'
+        assert ts.log_file == f'{expected_obs_id}.log', 'wrong log file'
+        assert ts.prev == f'{expected_fid}_prev.jpg', 'wrong preview'
         assert (
-            ts.model_file_name == 'VLASS1.2.T23t09.J083851+483000.xml'
-        ), 'wrong model name'
+            ts.thumb == f'{expected_fid}_prev_256.jpg'
+        ), 'wrong thumbnail'
         assert (
-            ts.log_file == 'VLASS1.2.T23t09.J083851+483000.log'
-        ), 'wrong log file'
-        assert (
-            sn.WallabyName.remove_extensions(ts.file_name) == f'{test_bit}.subim'
-        ), 'wrong extensions'
-        assert ts.epoch == 'VLASS1.2', 'wrong epoch'
-        assert (
-            ts.tile_url == 'https://archive-new.nrao.edu/vlass/quicklook/'
-            'VLASS1.2/T23t09/'
-        ), 'wrong tile url'
-        assert (
-            ts.rejected_url == 'https://archive-new.nrao.edu/vlass/'
-            'quicklook/VLASS1.2/QA_REJECTED/'
-        ), 'wrong rejected url'
-        assert (
-            ts.image_pointing_url == 'https://archive-new.nrao.edu/vlass/'
-            'quicklook/VLASS1.2/T23t09/VLASS1.2.ql.'
-            'T23t09.J083851+483000.10.2048.v1/'
-        ), 'wrong image pointing url'
-        assert ts.prev == f'{test_bit}.subim_prev.jpg', 'wrong preview'
-        assert ts.thumb == f'{test_bit}.subim_prev_256.jpg', 'wrong thumbnail'
-        assert (
-            ts.prev_uri == f'{sn.CADC_SCHEME}:{sn.COLLECTION}/'
-                           f'{test_bit}.subim_prev.jpg'
+            ts.prev_uri == f'{sn.CIRADA_SCHEME}:{sn.COLLECTION}/{ts.prev}'
         ), 'wrong preview uri'
         assert (
-            ts.thumb_uri == f'{sn.CADC_SCHEME}:{sn.COLLECTION}/'
-                            f'{test_bit}.subim_prev_256.jpg'
+            ts.thumb_uri == f'{sn.CIRADA_SCHEME}:{sn.COLLECTION}/{ts.thumb}'
         ), 'wrong thumbnail uri'
-        assert (
-            ts.lineage
-            == f'{ts.product_id}/{sn.SCHEME}:{sn.COLLECTION}/'
-               f'{test_bit}.subim.fits'
-        ), 'wrong lineage'
-
-
-def test_source_names():
-    test_url = (
-        'https://archive-new.nrao.edu/vlass/quicklook/VLASS1.2/T23t09/'
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1/VLASS1.2.ql.T23t09.'
-        'J083851+483000.10.2048.v1.I.iter1.image.pbcor.tt0.subim.fits'
-    )
-    test_f_name = (
-        'VLASS1.2.ql.T23t09.J083851+483000.10.2048.v1.I.iter1.image.pbcor.'
-        'tt0.subim.fits'
-    )
-    test_subject = nbc.EntryBuilder(sn.WallabyName)
-    test_result = test_subject.build(test_url)
-    assert len(test_result.source_names) == 1, 'wrong length'
-    assert test_result.source_names[0] == test_url, 'wrong result'
-
-    test_result = test_subject.build(test_f_name)
-    assert len(test_result.source_names) == 1, 'wrong length'
-    assert test_result.source_names[0] == test_f_name, 'wrong result'
+        assert len(ts.source_names) == 1, 'wrong length'

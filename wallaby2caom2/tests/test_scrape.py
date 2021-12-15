@@ -80,7 +80,8 @@ from caom2pipe import name_builder_composable as nbc
 from caom2.diff import get_differences
 
 from wallaby2caom2 import scrape, time_bounds_augmentation, composable
-from wallaby2caom2 import validator, WallabyName, data_source
+# from wallaby2caom2 import validator, WallabyName, data_source
+from wallaby2caom2 import WallabyName, data_source
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
