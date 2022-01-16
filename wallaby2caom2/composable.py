@@ -207,7 +207,9 @@ def _run_remote():
     config.get_executors()
     vo_client = Client(vospace_certfile=config.proxy_fqn)
     source_transfer = tc.VoFitsTransfer(vo_client)
-    source = dsc.VaultDataSource(vo_client, config)
+    source = dsc.VaultDataSource(
+        vo_client, config, config.recurse_data_sources
+    )
     name_builder = nbc.EntryBuilder(sn.WallabyName)
     reader = rdc.VaultReader(vo_client)
     return rc.run_by_todo(
