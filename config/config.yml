@@ -70,7 +70,7 @@ state_file_name: state.yml
 #
 interval: 600
 data_sources:
-  - vos:cirada/emission/PilotFieldReleases_Jun2021/KinematicModels/Wallaby_Hydra_DR2_KinematicModels_v2/WALLABY_J100342-270137
+  - vos:cirada/emission/PilotFieldReleases_Jun2021/KinematicModels
 data_source_extensions:
   - .fits
 # how to control the work that gets done
