@@ -96,7 +96,7 @@ class Telescope(object):
         bp.configure_energy_axis(3)
         bp.configure_polarization_axis(4)
 
-        meta_producer = mc.get_version(sn.APPLICATION)
+        #meta_producer = mc.get_version(sn.APPLICATION)
         bp.set('Observation.metaProducer', meta_producer)
         bp.set('Plane.metaProducer', meta_producer)
         bp.set('Artifact.metaProducer', meta_producer)
@@ -115,10 +115,10 @@ class Telescope(object):
         #bp.set('Observation.target.type', 'field')
 
         # Clare Chandler via JJK - 21-08-18
-        bp.set('Observation.instrument.name', 'AKSAP')
+        bp.set('Observation.instrument.name', 'ASKAP')
         # From JJK - 27-08-18 - slack
         bp.set('Observation.proposal.title', 'WALLABY')
-        bp.set('Observation.proposal.project', 'ALLABY')
+        bp.set('Observation.proposal.project', 'WALLABY')
         bp.set('Observation.proposal.id', 'get_proposal_id(uri)')
 
         # plane level
