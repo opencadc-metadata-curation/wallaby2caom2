@@ -96,7 +96,7 @@ class Telescope(object):
         bp.configure_energy_axis(3)
         bp.configure_polarization_axis(4)
 
-        #meta_producer = mc.get_version(sn.APPLICATION)
+        meta_producer = mc.get_version(sn.APPLICATION)
         bp.set('Observation.metaProducer', meta_producer)
         bp.set('Plane.metaProducer', meta_producer)
         bp.set('Artifact.metaProducer', meta_producer)
