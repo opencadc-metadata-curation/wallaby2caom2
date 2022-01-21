@@ -81,7 +81,24 @@ from wallaby2caom2 import storage_name as sn
 __all__ = ['Telescope']
 
 
+class WallabyValueRepair(mc.ValueRepairCache):
+
+    VALUE_REPAIR = {
+        'chunk.energy.axis.axis.cunit': {
+            'm / s': 'm/s',
+        }
+    }
+
+    def __init__(self):
+        self._value_repair = WallabyValueRepair.VALUE_REPAIR
+        self._key = None
+        self._values = None
+        self._logger = logging.getLogger(self.__class__.__name__)
+
+
 class Telescope(object):
+
+    value_repair = WallabyValueRepair()
 
     def __init__(self, uri, headers):
         self._uri = uri
@@ -222,6 +239,7 @@ class Telescope(object):
                             f'Change URI from {old_uri} to {artifact.uri}'
                         )
 
+            Telescope.value_repair.repair(observation)
             logging.debug('Done update.')
             return observation
         except mc.CadcException as e:
