@@ -10,11 +10,11 @@
   <caom2:intent>science</caom2:intent>
   <caom2:proposal>
     <caom2:id>WALLABY_J100342-270136_FittedData_v2.fits</caom2:id>
-    <caom2:project>ALLABY</caom2:project>
+    <caom2:project>WALLABY</caom2:project>
     <caom2:title>WALLABY</caom2:title>
   </caom2:proposal>
   <caom2:instrument>
-    <caom2:name>AKSAP</caom2:name>
+    <caom2:name>ASKAP</caom2:name>
   </caom2:instrument>
   <caom2:planes>
     <caom2:plane caom2:id="c77d68b0-a2fa-4548-a461-b2de130a5f71">

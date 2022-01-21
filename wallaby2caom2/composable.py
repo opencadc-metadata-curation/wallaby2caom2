@@ -72,7 +72,6 @@ import sys
 import traceback
 
 from caom2pipe import client_composable as clc
-from caom2pipe import data_source_composable as dsc
 from caom2pipe import manage_composable as mc
 from caom2pipe import name_builder_composable as nbc
 from caom2pipe import reader_composable as rdc
@@ -163,15 +162,12 @@ def _run():
     """
     config = mc.Config()
     config.get_executors()
-    clients = None
-    reader = None
     source_transfer = None
     vo_client = Client(vospace_certfile=config.proxy_fqn)
-    if mc.TaskType.STORE in config.task_types:
-        clients = clc.ClientCollection(config)
+    clients = clc.ClientCollection(config)
+    clients.vo_client = vo_client
+    if config.use_vos:
         source_transfer = tc.VoFitsTransfer(vo_client)
-    else:
-        reader = rdc.VaultReader(vo_client)
     name_builder = nbc.EntryBuilder(sn.WallabyName)
     return rc.run_by_todo(
         config=config,
@@ -180,7 +176,6 @@ def _run():
         data_visitors=DATA_VISITORS,
         store_transfer=source_transfer,
         clients=clients,
-        metadata_reader=reader,
     )
 
 
@@ -206,10 +201,9 @@ def _run_remote():
     config = mc.Config()
     config.get_executors()
     vo_client = Client(vospace_certfile=config.proxy_fqn)
+    clients = clc.ClientCollection(config)
+    clients.vo_client = vo_client
     source_transfer = tc.VoFitsTransfer(vo_client)
-    source = dsc.VaultDataSource(
-        vo_client, config, config.recurse_data_sources
-    )
     name_builder = nbc.EntryBuilder(sn.WallabyName)
     reader = rdc.VaultReader(vo_client)
     return rc.run_by_todo(
@@ -217,9 +211,9 @@ def _run_remote():
         name_builder=name_builder,
         meta_visitors=META_VISITORS,
         data_visitors=DATA_VISITORS,
-        source=source,
         store_transfer=source_transfer,
         metadata_reader=reader,
+        clients=clients,
     )
 
 
