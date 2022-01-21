@@ -84,7 +84,7 @@
                     <caom2:axis>
                       <caom2:axis>
                         <caom2:ctype>VOPT</caom2:ctype>
-                        <caom2:cunit>m / s</caom2:cunit>
+                        <caom2:cunit>m/s</caom2:cunit>
                       </caom2:axis>
                       <caom2:function>
                         <caom2:naxis>18</caom2:naxis>
