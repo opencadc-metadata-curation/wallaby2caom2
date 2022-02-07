@@ -218,6 +218,10 @@ class Telescope(object):
             mc.check_param(observation, Observation)
             for plane in observation.planes.values():
                 for artifact in plane.artifacts.values():
+                    if '.txt' in artifact.uri:
+                        continue
+                    if artifact.uri != self._uri:
+                        continue
                     for part in artifact.parts.values():
                         for chunk in part.chunks:
                             if chunk.position is not None:
