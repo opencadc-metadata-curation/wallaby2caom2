@@ -1,5 +1,5 @@
 # wallaby2caom2
-Application to generate a CAOM2 observation from Wallaby files.
+Application to generate a CAOM2 observation from CIRADA (https://cirada.ca/) Wallaby files.
 
 # How To Run Wallaby Testing
 
