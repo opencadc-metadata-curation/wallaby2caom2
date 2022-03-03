@@ -1,5 +1,5 @@
 # wallaby2caom2
-Application to generate a CAOM2 observation from Wallaby files.
+Application to generate a CAOM2 observation from CIRADA (https://cirada.ca/) Wallaby files.
 
 # How To Run Wallaby Testing
 
@@ -56,20 +56,20 @@ https://github.com/opencadc/collection2caom2/wiki/config.yml.
 proxy certificate as follows. You will be prompted for the password for your CADC user:
 
    ```
-   user@dockerhost:<cwd># docker run --rm -ti -v ${PWD}:/usr/src/app --name wallably_run_cli wallaby_run cadc-get-cert --days-valid 10 --cert-filename /usr/src/app/cadcproxy.pem -u <your CADC username>
+   user@dockerhost:<cwd># docker run --rm -ti -v ${PWD}:/usr/src/app --user $(id -u):$(id -g) -e HOME=/usr/src/app --name wallably_run_cli wallaby_run cadc-get-cert --days-valid 10 --cert-filename /usr/src/app/cadcproxy.pem -u <your CADC username>
    ```
 
 1. To run the application:
 
    ```
-   user@dockerhost:<cwd># docker run --rm -ti -v <cwd>:/usr/src/app --name wallaby_run_cli wallaby_run_cli wallaby_run
+   user@dockerhost:<cwd># docker run --rm -ti -v <cwd>:/usr/src/app --user $(id -u):$(id -g) -e HOME=/usr/src/app --name wallaby_run_cli wallaby_run_cli wallaby_run
    ```
 
 1. To edit and test the application from inside a container:
 
    ```
    user@dockerhost:<cwd># git clone https://github.com/opencadc/wallaby2caom2.git 
-   user@dockerhost:<cwd># docker run --rm -ti -v <cwd>:/usr/src/app --name wallaby_run_cli wallaby_run_cli /bin/bash
+   user@dockerhost:<cwd># docker run --rm -ti -v <cwd>:/usr/src/app --user $(id -u):$(id -g) -e HOME=/usr/src/app --name wallaby_run_cli wallaby_run_cli /bin/bash
    root@53bef30d8af3:/usr/src/app# pip install -e ./wallaby2caom2
    root@53bef30d8af3:/usr/src/app# pip install mock pytest 
    root@53bef30d8af3:/usr/src/app# cd wallaby2caom2/wallaby2caom2/tests

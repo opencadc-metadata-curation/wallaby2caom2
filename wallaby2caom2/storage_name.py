@@ -197,13 +197,25 @@ class WallabyName(mc.StorageName):
 
     @staticmethod
     def get_product_id_from_file_name(file_name):
-        bits = file_name.split('_')
-        return bits[2]
+        result = 'kinematic_model'
+        if (
+            '_cube' in file_name
+            or '_mom' in file_name
+            or '_chan' in file_name
+            or '_mask' in file_name
+        ):
+            result = 'source_cube'
+        return result
+
 
     @staticmethod
     def get_version(file_name):
         bits = file_name.split('_')
-        return bits[3]
+        if len(bits) > 3:
+            return bits[3]
+        else:
+            return "DR2"
+        
 
     @staticmethod
     def remove_extensions(file_name):
