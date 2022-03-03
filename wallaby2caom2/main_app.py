@@ -196,6 +196,8 @@ class Telescope(object):
             return ProductType.NOISE
         elif 'DiagnosticPlot' in self._uri:
             return ProductType.PREVIEW
+        elif self._uri.endswith('.txt'):
+            return ProductType.AUXILIARY
         else:
             return ProductType.SCIENCE
 
