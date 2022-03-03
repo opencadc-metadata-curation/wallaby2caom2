@@ -109,9 +109,10 @@ class Telescope(object):
         """Configure the VLASS-specific ObsBlueprint for the CAOM model
         SpatialWCS."""
         self._logger.debug('Begin accumulate_wcs.')
-        bp.configure_position_axes((1, 2))
-        bp.configure_energy_axis(3)
-        bp.configure_polarization_axis(4)
+        if not 'naming pattern for model fits files':
+          bp.configure_position_axes((1, 2))
+          bp.configure_energy_axis(3)
+          bp.configure_polarization_axis(4)
 
         meta_producer = mc.get_version(sn.APPLICATION)
         bp.set('Observation.metaProducer', meta_producer)
@@ -165,12 +166,13 @@ class Telescope(object):
         bp.set('Artifact.releaseType', 'data')
 
         # chunk level
-        bp.clear('Chunk.position.axis.function.cd11')
-        bp.clear('Chunk.position.axis.function.cd22')
-        bp.add_fits_attribute('Chunk.position.axis.function.cd11', 'CDELT1')
-        bp.set('Chunk.position.axis.function.cd12', 0.0)
-        bp.set('Chunk.position.axis.function.cd21', 0.0)
-        bp.add_fits_attribute('Chunk.position.axis.function.cd22', 'CDELT2')
+        if not 'naming patern for model fits files':
+          bp.clear('Chunk.position.axis.function.cd11')
+          bp.clear('Chunk.position.axis.function.cd22')
+          bp.add_fits_attribute('Chunk.position.axis.function.cd11', 'CDELT1')
+          bp.set('Chunk.position.axis.function.cd12', 0.0)
+          bp.set('Chunk.position.axis.function.cd21', 0.0)
+          bp.add_fits_attribute('Chunk.position.axis.function.cd22', 'CDELT2')
 
         # Clare Chandler via JJK - 21-08-18
         bp.set('Chunk.energy.bandpassName', 'S-band')
@@ -178,12 +180,15 @@ class Telescope(object):
         self._logger.debug('End accumulate_wcs')
 
     def get_position_resolution(self, ext):
-        bmaj = self._headers[ext]['BMAJ']
-        bmin = self._headers[ext]['BMIN']
+        if 'BMAJ' in self._headers[ext]:
+          bmaj = self._headers[ext]['BMAJ']
+          bmin = self._headers[ext]['BMIN']
         # From
         # https://open-confluence.nrao.edu/pages/viewpage.action?pageId=13697486
         # Clare Chandler via JJK - 21-08-18
-        return 3600.0 * sqrt(bmaj * bmin)
+          return 3600.0 * sqrt(bmaj * bmin)
+        else:
+            return 0.0
 
     def get_product_type(self, ext):
         if '.rms.' in self._uri:
