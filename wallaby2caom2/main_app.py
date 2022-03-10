@@ -109,8 +109,8 @@ class Telescope(object):
         """Configure the VLASS-specific ObsBlueprint for the CAOM model
         SpatialWCS."""
         self._logger.debug('Begin accumulate_wcs.')
-        model_type = sn.WallabyName.get_product_id_from_file_name(self._uri)
-        if model_type == 'kinematic_model':
+        product_type = self.get_product_type(0)
+        if product_type == ProductType.SCIENCE:
             bp.configure_position_axes((1, 2))
             bp.configure_energy_axis(3)
             bp.configure_polarization_axis(4)
@@ -167,7 +167,7 @@ class Telescope(object):
         bp.set('Artifact.releaseType', 'data')
 
         # chunk level
-        if model_type == 'kinematic_model':
+        if product_type == ProductType.SCIENCE:
             bp.clear('Chunk.position.axis.function.cd11')
             bp.clear('Chunk.position.axis.function.cd22')
             bp.add_fits_attribute('Chunk.position.axis.function.cd11', 'CDELT1')
