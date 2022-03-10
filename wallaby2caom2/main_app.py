@@ -72,7 +72,7 @@ import traceback
 
 from math import sqrt
 
-from caom2 import Observation, ProductType
+from caom2 import Observation, ProductType, TypedOrderedDict, Part
 from caom2pipe import astro_composable as ac
 from caom2pipe import manage_composable as mc
 from wallaby2caom2 import storage_name as sn
@@ -196,6 +196,13 @@ class Telescope(object):
             return ProductType.NOISE
         elif 'DiagnosticPlot' in self._uri:
             return ProductType.PREVIEW
+        elif (
+            self._uri.endswith('.txt')
+            or 'ModelGeometry' in self._uri
+            or 'ModelRotationCurve' in self._uri
+            or 'ModelSurfaceDensity' in self._uri
+        ):
+            return ProductType.AUXILIARY
         else:
             return ProductType.SCIENCE
 
@@ -229,6 +236,9 @@ class Telescope(object):
                     if '.txt' in artifact.uri:
                         continue
                     if artifact.uri != self._uri:
+                        continue
+                    if artifact.product_type == ProductType.AUXILIARY:
+                        artifact.parts = TypedOrderedDict(Part,)
                         continue
                     for part in artifact.parts.values():
                         for chunk in part.chunks:
