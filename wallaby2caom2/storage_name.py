@@ -203,6 +203,7 @@ class WallabyName(mc.StorageName):
             or '_mom' in file_name
             or '_chan' in file_name
             or '_mask' in file_name
+            or '_spec' in file_name
         ):
             result = 'source_cube'
         return result

@@ -70,6 +70,7 @@
 import logging
 
 from caom2 import SimpleObservation, DerivedObservation, Algorithm
+from caom2 import ProductType
 from caom2utils import ObsBlueprint, GenericParser, FitsParser
 from wallaby2caom2 import main_app, storage_name
 
@@ -89,7 +90,10 @@ class Fits2caom2Visitor:
             blueprint = ObsBlueprint(instantiated_class=telescope_data)
             telescope_data.accumulate_wcs(blueprint)
 
-            if len(headers) == 0:
+            if (
+                len(headers) == 0
+                or telescope_data.get_product_type(0) != ProductType.SCIENCE
+            ):
                 parser = GenericParser(blueprint, uri)
             else:
                 parser = FitsParser(headers, blueprint, uri)
