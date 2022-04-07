@@ -176,7 +176,7 @@ class Telescope(object):
             bp.add_fits_attribute('Chunk.position.axis.function.cd22', 'CDELT2')
 
         # Clare Chandler via JJK - 21-08-18
-        bp.set('Chunk.energy.bandpassName', 'S-band')
+        bp.set('Chunk.energy.bandpassName', 'L-band')
         bp.add_fits_attribute('Chunk.energy.restfrq', 'RESTFREQ')
         self._logger.debug('End accumulate_wcs')
 
