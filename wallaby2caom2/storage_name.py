@@ -192,7 +192,7 @@ class WallabyName(mc.StorageName):
         from the file name.
         """
         bits = file_name.split('_')
-        obs_id = f'{bits[0]}_{bits[1]}'
+        obs_id = f'{bits[0]}_{bits[1]_bits[3]}'
         return obs_id
 
     @staticmethod
