@@ -197,7 +197,9 @@ class WallabyName(mc.StorageName):
 
     @staticmethod
     def get_product_id_from_file_name(file_name):
-        result = 'kinematic_model'
+        bits = file_name.split("_")
+        tail = f'{bits[2]}_{bits[3]}'
+        result = 'kinematic_model'+'_'+tail
         if (
             '_cube' in file_name
             or '_mom' in file_name
@@ -205,7 +207,7 @@ class WallabyName(mc.StorageName):
             or '_mask' in file_name
             or '_spec' in file_name
         ):
-            result = 'source_cube'
+            result = 'source_cube'+'_'+tail
         return result
 
 
