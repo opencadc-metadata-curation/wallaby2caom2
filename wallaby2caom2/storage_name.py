@@ -115,26 +115,15 @@ class WallabyName(mc.StorageName):
                 # it's an Artifact URI
                 self._url = None
                 self._file_name = temp.path.split('/')[-1]
-        self._obs_id = WallabyName.get_obs_id_from_file_name(self._file_name)
-        self._product_id = WallabyName.get_product_id_from_file_name(
-            self._file_name
-        )
         self._file_id = WallabyName.remove_extensions(self._file_name)
+        self._obs_id = WallabyName.get_obs_id_from_file_name(self._file_id)
+        self._product_id = WallabyName.get_product_id_from_file_id(
+            self._file_id
+        )
         self._version = WallabyName.get_version(self._file_name)
         self._scheme = SCHEME
         self._source_names = [entry]
         self._destination_uris = [self.file_uri]
-
-    def __str__(self):
-        return (
-            f'\n'
-            f'      obs_id: {self.obs_id}\n'
-            f'     file_id: {self.file_id}\n'
-            f'   file_name: {self.file_name}\n'
-            f'source_names: {self.source_names}\n'
-            f'    file_uri: {self.file_uri}\n'
-            f'         url: {self.url}\n'
-        )
 
     @property
     def file_id(self):
@@ -158,7 +147,7 @@ class WallabyName(mc.StorageName):
 
     @property
     def product_id(self):
-        return WallabyName.get_product_id_from_file_name(self.file_name)
+        return WallabyName.get_product_id_from_file_id(self._file_id)
 
     @property
     def scheme(self):
@@ -187,27 +176,26 @@ class WallabyName(mc.StorageName):
         return cc.build_artifact_uri(file_name, self.collection, scheme)
 
     @staticmethod
-    def get_obs_id_from_file_name(file_name):
+    def get_obs_id_from_file_name(file_id):
         """The obs id is made of the VLASS epoch, tile name, and image centre
         from the file name.
         """
-        bits = file_name.split('_')
-        obs_id = f'{bits[0]}_{bits[1]_bits[3]}'
+        bits = file_id.split('_')
+        obs_id = f'{bits[0]}_{bits[1]}_{bits[3]}'
         return obs_id
 
     @staticmethod
-    def get_product_id_from_file_name(file_name):
+    def get_product_id_from_file_id(file_id):
         result = 'kinematic_model'
         if (
-            '_cube' in file_name
-            or '_mom' in file_name
-            or '_chan' in file_name
-            or '_mask' in file_name
-            or '_spec' in file_name
+            '_cube' in file_id
+            or '_mom' in file_id
+            or '_chan' in file_id
+            or '_mask' in file_id
+            or '_spec' in file_id
         ):
             result = 'source_cube'
         return result
-
 
     @staticmethod
     def get_version(file_name):
@@ -216,7 +204,6 @@ class WallabyName(mc.StorageName):
             return bits[3]
         else:
             return "DR2"
-        
 
     @staticmethod
     def remove_extensions(file_name):
