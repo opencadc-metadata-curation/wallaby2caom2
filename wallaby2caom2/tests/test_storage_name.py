@@ -79,7 +79,7 @@ def test_storage_name():
         f'KinematicModels/Wallaby_Hydra_DR2_KinematicModels_v2/'
         f'WALLABY_J100342-270137/{test_f_name}'
     )
-    expected_obs_id = 'WALLABY_J100342-270137'
+    expected_obs_id = 'WALLABY_J100342-270137_v2'
     expected_fid = basename(test_url).replace('.fits', '')
     for ii in [test_url, test_f_name]:
         ts = sn.WallabyName(ii)

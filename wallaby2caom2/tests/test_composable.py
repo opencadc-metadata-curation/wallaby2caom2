@@ -137,7 +137,7 @@ def test_run_remote(
     assert exec_mock.called, 'expect exec call'
     test_parameter = exec_mock.call_args.args[0]
     assert isinstance(test_parameter, storage_name.WallabyName), 'wromg type'
-    assert test_parameter.obs_id == 'WALLABY_J100342-270137'
+    assert test_parameter.obs_id == 'WALLABY_J100342-270137_v2'
     assert (
         test_parameter.source_names[0] ==
         'vos:goliaths/test/WALLABY_J100342-270137_AverageModelCube_v2.fits'
@@ -198,7 +198,7 @@ def test_store():
     test_url = (
         f'vos:cirada/emission/PilotFieldReleases_Jun2021/'
         f'KinematicModels/Wallaby_Hydra_DR2_KinematicModels_v2/'
-        f'WALLABY_J100342-270137/{test_f_name}'
+        f'WALLABY_J100342-270137_v2/{test_f_name}'
     )
     test_storage_name = storage_name.WallabyName(test_url)
     transferrer = Mock()
@@ -211,14 +211,14 @@ def test_store():
     test_subject.execute(None)
     assert cadc_data_client.put.called, 'expect a call'
     cadc_data_client.put.assert_called_with(
-        '/tmp/WALLABY_J100342-270137',
+        '/tmp/WALLABY_J100342-270137_v2',
         f'{storage_name.SCHEME}:{storage_name.COLLECTION}/{test_f_name}',
         None,
     ), 'wrong put args'
     assert transferrer.get.called, 'expect a transfer call'
     transferrer.get.assert_called_with(
         test_url,
-        f'/tmp/WALLABY_J100342-270137/{test_f_name}',
+        f'/tmp/WALLABY_J100342-270137_v2/{test_f_name}',
     ), 'wrong transferrer args'
 
 # @patch('cadcutils.net.ws.WsCapabilities.get_access_url')
@@ -276,11 +276,11 @@ def test_run_use_local_files(
             assert test_result is not None, 'expect result'
             assert test_result == 0, 'expect success'
             assert meta_visit_mock.called, '_visit_meta call'
-            assert meta_visit_mock.call_count == 4, '_visit_meta call count'
+            assert meta_visit_mock.call_count == 6, '_visit_meta call count'
             assert caom2_read_mock.called, '_caom2_store call'
-            assert caom2_read_mock.call_count == 4, '_caom2_store call count'
+            assert caom2_read_mock.call_count == 6, '_caom2_store call count'
             assert caom2_store_mock.called, '_caom2_store call'
-            assert caom2_store_mock.call_count == 4, '_caom2_store call count'
+            assert caom2_store_mock.call_count == 6, '_caom2_store call count'
         finally:
             os.getcwd = getcwd_orig
             os.chdir(cwd)
