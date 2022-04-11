@@ -72,7 +72,8 @@ import traceback
 
 from math import sqrt
 
-from caom2 import Observation, ProductType, TypedOrderedDict, Part
+from caom2 import Observation, ProductType, TypedOrderedDict, Part, Chunk
+from caom2 import TypedList
 from caom2pipe import astro_composable as ac
 from caom2pipe import manage_composable as mc
 from wallaby2caom2 import storage_name as sn
@@ -240,7 +241,9 @@ class Telescope(object):
                     if artifact.product_type == ProductType.AUXILIARY:
                         artifact.parts = TypedOrderedDict(Part,)
                         continue
+                    delete_these_parts = []
                     for part in artifact.parts.values():
+                        delete_part = False
                         for chunk in part.chunks:
                             if chunk.position is not None:
                                 chunk.position.resolution = (
@@ -252,6 +255,20 @@ class Telescope(object):
                             ):
                                 chunk.energy_axis = chunk.naxis
 
+                            if (
+                                chunk.position is None
+                                and chunk.energy is None
+                                and chunk.time is None
+                                and chunk.polarization is None
+                                and chunk.naxis is not None
+                            ):
+                                # _spec files have a second BINTABLE HDU,
+                                # with no WCS captured in C* keywords
+                                delete_these_parts.append(part.name)
+
+                    for entry in delete_these_parts:
+                        artifact.parts.popitem(entry)
+                        logging.info(f'Remove part {entry} with no WCS.')
                     if artifact.uri.startswith('vos:cirada'):
                         old_uri = artifact.uri
                         artifact.uri = old_uri.replace(
