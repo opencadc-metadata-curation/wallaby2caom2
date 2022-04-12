@@ -197,6 +197,8 @@ class Telescope(object):
             return ProductType.NOISE
         elif 'DiagnosticPlot' in self._uri:
             return ProductType.PREVIEW
+        elif self._uri.endswith('.png'):
+            return ProductType.THUMBNAIL
         elif (
             self._uri.endswith('.txt')
             or 'ModelGeometry' in self._uri
