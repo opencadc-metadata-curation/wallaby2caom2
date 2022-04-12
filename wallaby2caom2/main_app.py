@@ -195,8 +195,6 @@ class Telescope(object):
     def get_product_type(self, ext):
         if '.rms.' in self._uri:
             return ProductType.NOISE
-        elif 'DiagnosticPlot' in self._uri:
-            return ProductType.PREVIEW
         elif self._uri.endswith('.png'):
             return ProductType.THUMBNAIL
         elif (
