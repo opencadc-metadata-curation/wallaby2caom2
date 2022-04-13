@@ -187,7 +187,11 @@ class WallabyName(mc.StorageName):
 
     @staticmethod
     def get_product_id_from_file_id(file_id):
-        ans = "_".join(file_id.split("_")[2:-1])
+        ans = file_id.split("_")
+        if "Kin" in ans:
+            ans.remove("Kin")
+        return "_".join(ans[2:-1])    
+                       
         result = 'kinematic_model'+"_"+ans
         if (
             '_cube' in file_id
