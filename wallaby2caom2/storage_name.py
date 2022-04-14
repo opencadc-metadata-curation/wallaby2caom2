@@ -190,9 +190,10 @@ class WallabyName(mc.StorageName):
         ans = file_id.split("_")
         if "Kin" in ans:
             ans.remove("Kin")
-        return "_".join(ans[2:-1])    
+        fans = "_".join(ans[2;-1])    
+            
                        
-        result = 'kinematic_model'+"_"+ans
+        result = 'kinematic_model'+"_"+fans
         if (
             '_cube' in file_id
             or '_mom' in file_id
@@ -200,7 +201,7 @@ class WallabyName(mc.StorageName):
             or '_mask' in file_id
             or '_spec' in file_id
         ):
-            result = 'source_cube'+"_"+ans
+            result = 'source_cube'+"_"+fans
         return result
 
     @staticmethod
