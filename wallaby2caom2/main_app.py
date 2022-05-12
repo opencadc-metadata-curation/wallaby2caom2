@@ -126,7 +126,7 @@ class Telescope(object):
         bp.set('Observation.type', 'OBJECT')
 
         # over-ride use of value from default keyword 'DATE'
-        bp.set('Observation.metaRelease', '2023-01-01')
+        bp.set('Observation.metaRelease', '2022-01-01')
         #bp.clear('Observation.metaRelease')
         #bp.add_fits_attribute('Observation.metaRelease', 'DATE-OBS')
 
@@ -158,9 +158,9 @@ class Telescope(object):
 
         # VLASS data is public, says Eric Rosolowsky via JJK May 30/18
         bp.clear('Plane.metaRelease')
-        bp.set('Plane.metaRelease', '2023-01-01')
+        bp.set('Plane.metaRelease', '2022-01-01')
         bp.clear('Plane.dataRelease')
-        bp.set('Plane.dataRelease', '2023-01-01')
+        bp.set('Plane.dataRelease', '2022-01-01')
 
         # artifact level
         bp.clear('Artifact.productType')
