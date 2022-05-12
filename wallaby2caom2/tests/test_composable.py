@@ -137,7 +137,7 @@ def test_run_remote(
     assert exec_mock.called, 'expect exec call'
     test_parameter = exec_mock.call_args.args[0]
     assert isinstance(test_parameter, storage_name.WallabyName), 'wromg type'
-    assert test_parameter.obs_id == 'WALLABY_J100342-270137_v2'
+    assert test_parameter.obs_id == 'WALLABY_J100342-270137'
     assert (
         test_parameter.source_names[0] ==
         'vos:goliaths/test/WALLABY_J100342-270137_AverageModelCube_v2.fits'
@@ -203,38 +203,29 @@ def test_store():
     test_storage_name = storage_name.WallabyName(test_url)
     transferrer = Mock()
     cadc_data_client = Mock()
+    clients_mock = Mock()
+    clients_mock.data_client = cadc_data_client
     observable = mc.Observable(
         mc.Rejected('/tmp/rejected.yml'), mc.Metrics(test_config))
     test_subject = ec.Store(
-        test_config, test_storage_name,
-        cadc_data_client, observable, transferrer)
+        test_config,
+        test_storage_name,
+        observable,
+        transferrer,
+        clients_mock,
+    )
     test_subject.execute(None)
     assert cadc_data_client.put.called, 'expect a call'
     cadc_data_client.put.assert_called_with(
-        '/tmp/WALLABY_J100342-270137_v2',
+        '/tmp/WALLABY_J100342-270137',
         f'{storage_name.SCHEME}:{storage_name.COLLECTION}/{test_f_name}',
         None,
     ), 'wrong put args'
     assert transferrer.get.called, 'expect a transfer call'
     transferrer.get.assert_called_with(
         test_url,
-        f'/tmp/WALLABY_J100342-270137_v2/{test_f_name}',
+        f'/tmp/WALLABY_J100342-270137/{test_f_name}',
     ), 'wrong transferrer args'
-
-# @patch('cadcutils.net.ws.WsCapabilities.get_access_url')
-# @patch('caom2pipe.execute_composable.CaomExecute._caom2_store')
-# @patch('caom2pipe.execute_composable.CaomExecute._visit_meta')
-# @patch('caom2pipe.data_source_composable.TodoFileDataSource.get_work')
-# @patch('caom2pipe.client_composable.CAOM2RepoClient')
-# @patch('caom2pipe.client_composable.StorageClientWrapper')
-# def test_run_ingest(
-#     data_client_mock,
-#     repo_client_mock,
-#     data_source_mock,
-#     meta_visit_mock,
-#     caom2_store_mock,
-#     access_url_mock,
-# ):
 
 
 @patch('caom2pipe.reader_composable.FileMetadataReader._retrieve_headers')

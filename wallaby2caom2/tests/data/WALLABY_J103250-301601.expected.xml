@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<caom2:Observation xmlns:caom2="http://www.opencadc.org/caom2/xml/v2.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="caom2:SimpleObservation" caom2:id="d76d68b0-a2fa-4548-a461-b2de130a5f70" caom2:metaProducer="wallaby2caom2/0.1.0">
+<caom2:Observation xmlns:caom2="http://www.opencadc.org/caom2/xml/v2.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="caom2:SimpleObservation" caom2:id="c76d68b0-a2fa-4548-a461-b2de130a5f70" caom2:metaProducer="wallaby2caom2/0.1.0">
   <caom2:collection>WALLABY</caom2:collection>
-  <caom2:observationID>WALLABY_J103939-280552_TR2</caom2:observationID>
+  <caom2:observationID>WALLABY_J103250-301601</caom2:observationID>
   <caom2:metaRelease>2023-01-01T00:00:00.000</caom2:metaRelease>
   <caom2:algorithm>
     <caom2:name>exposure</caom2:name>
@@ -9,33 +9,31 @@
   <caom2:type>OBJECT</caom2:type>
   <caom2:intent>science</caom2:intent>
   <caom2:proposal>
-    <caom2:id>WALLABY_J103939-280552_Hydra_TR2_spec.fits</caom2:id>
+    <caom2:id>WALLABY_J103250-301601_Hydra_TR1_spec.fits</caom2:id>
     <caom2:project>WALLABY</caom2:project>
     <caom2:title>WALLABY</caom2:title>
   </caom2:proposal>
-  <caom2:target>
-    <caom2:name>WALLABY J103939-280552</caom2:name>
-  </caom2:target>
   <caom2:instrument>
     <caom2:name>ASKAP</caom2:name>
   </caom2:instrument>
   <caom2:planes>
-    <caom2:plane caom2:id="4a69b0e4-0ee0-4239-b85a-00f2f9e16b5b" caom2:metaProducer="wallaby2caom2/0.2.1">
-      <caom2:productID>source_cube</caom2:productID>
+    <caom2:plane caom2:id="3a69b0e4-0ee0-4239-b85a-00f2f9e16b5b" caom2:metaProducer="wallaby2caom2/0.2.1">
+      <caom2:productID>source_data_Hydra_TR1</caom2:productID>
       <caom2:metaRelease>2023-01-01T00:00:00.000</caom2:metaRelease>
       <caom2:dataRelease>2023-01-01T00:00:00.000</caom2:dataRelease>
       <caom2:dataProductType>cube</caom2:dataProductType>
       <caom2:calibrationLevel>2</caom2:calibrationLevel>
       <caom2:artifacts>
-        <caom2:artifact caom2:id="b9f5fd67-b867-4b3f-a293-1cd6735a7c5b" caom2:metaProducer="wallaby2caom2/0.2.1">
-          <caom2:uri>cadc:WALLABY/WALLABY_J103939-280552_Hydra_TR2_spec.fits</caom2:uri>
+        <caom2:artifact caom2:id="a9f5fd67-b867-4b3f-a293-1cd6735a7c5b" caom2:metaProducer="wallaby2caom2/0.2.1">
+          <caom2:uri>cadc:WALLABY/WALLABY_J103250-301601_Hydra_TR1_spec.fits</caom2:uri>
           <caom2:productType>science</caom2:productType>
           <caom2:releaseType>data</caom2:releaseType>
+          <caom2:contentType>application/fits</caom2:contentType>
           <caom2:parts>
-            <caom2:part caom2:id="eecd5533-fd9d-46f7-9a45-3a9cb35b38af">
+            <caom2:part caom2:id="decd5533-fd9d-46f7-9a45-3a9cb35b38af">
               <caom2:name>0</caom2:name>
               <caom2:chunks>
-                <caom2:chunk caom2:id="407f05fa-575b-419f-8569-837bea46bc0c" caom2:metaProducer="wallaby2caom2/0.2.1">
+                <caom2:chunk caom2:id="307f05fa-575b-419f-8569-837bea46bc0c" caom2:metaProducer="wallaby2caom2/0.2.1">
                   <caom2:naxis>3</caom2:naxis>
                   <caom2:positionAxis1>1</caom2:positionAxis1>
                   <caom2:positionAxis2>2</caom2:positionAxis2>
@@ -58,11 +56,11 @@
                         <caom2:refCoord>
                           <caom2:coord1>
                             <caom2:pix>0.0</caom2:pix>
-                            <caom2:val>159.913466395166</caom2:val>
+                            <caom2:val>158.209507126268</caom2:val>
                           </caom2:coord1>
                           <caom2:coord2>
                             <caom2:pix>0.0</caom2:pix>
-                            <caom2:val>-28.0980233106873</caom2:val>
+                            <caom2:val>-30.2671551738191</caom2:val>
                           </caom2:coord2>
                         </caom2:refCoord>
                         <caom2:cd11>-0.00166666</caom2:cd11>
@@ -71,8 +69,7 @@
                         <caom2:cd22>0.00166666</caom2:cd22>
                       </caom2:function>
                     </caom2:axis>
-                    <caom2:coordsys>FK5</caom2:coordsys>
-                    <caom2:equinox>2000.0</caom2:equinox>
+                    <caom2:coordsys>ICRS</caom2:coordsys>
                     <caom2:resolution>0.0</caom2:resolution>
                   </caom2:position>
                   <caom2:energy>
@@ -86,12 +83,11 @@
                         <caom2:delta>18518.0</caom2:delta>
                         <caom2:refCoord>
                           <caom2:pix>0.0</caom2:pix>
-                          <caom2:val>1404506872.80138</caom2:val>
+                          <caom2:val>1404146194.59925</caom2:val>
                         </caom2:refCoord>
                       </caom2:function>
                     </caom2:axis>
-                    <caom2:specsys>BARYCENT</caom2:specsys>
-                    <caom2:restfrq>1420405751.79</caom2:restfrq>
+                    <caom2:specsys></caom2:specsys>
                     <caom2:bandpassName>L-band</caom2:bandpassName>
                   </caom2:energy>
                 </caom2:chunk>

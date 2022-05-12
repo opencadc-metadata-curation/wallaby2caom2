@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <caom2:Observation xmlns:caom2="http://www.opencadc.org/caom2/xml/v2.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="caom2:SimpleObservation" caom2:id="9d06ef0e-86ba-4769-9a23-25e03a1f8339" caom2:metaProducer="wallaby2caom2/0.2.0">
   <caom2:collection>WALLABY</caom2:collection>
-  <caom2:observationID>WALLABY_J100342-270138_Vel.single</caom2:observationID>
+  <caom2:observationID>WALLABY_J100342-270138</caom2:observationID>
   <caom2:metaRelease>2023-01-01T00:00:00.000</caom2:metaRelease>
   <caom2:algorithm>
     <caom2:name>exposure</caom2:name>
@@ -18,7 +18,7 @@
   </caom2:instrument>
   <caom2:planes>
     <caom2:plane caom2:id="0dac0e2e-9647-4517-b784-5a88a45e5944" caom2:metaProducer="wallaby2caom2/0.2.0">
-      <caom2:productID>source_cube</caom2:productID>
+      <caom2:productID>source_data_cube_Vel.single</caom2:productID>
       <caom2:metaRelease>2023-01-01T00:00:00.000</caom2:metaRelease>
       <caom2:dataRelease>2023-01-01T00:00:00.000</caom2:dataRelease>
       <caom2:dataProductType>cube</caom2:dataProductType>
@@ -33,6 +33,7 @@
           <caom2:uri>cadc:WALLABY/WALLABY_J100342-270138_cube_Vel.fits.single_gfit.0.e.fits</caom2:uri>
           <caom2:productType>science</caom2:productType>
           <caom2:releaseType>data</caom2:releaseType>
+          <caom2:contentType>application/fits</caom2:contentType>
           <caom2:parts>
             <caom2:part caom2:id="f6e01a57-62ae-4392-b686-b424d8b7457f">
               <caom2:name>0</caom2:name>
