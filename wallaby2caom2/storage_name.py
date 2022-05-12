@@ -180,13 +180,20 @@ class WallabyName(mc.StorageName):
         """The obs id is made of the VLASS epoch, tile name, and image centre
         from the file name.
         """
+        
         bits = file_id.split('_')
-        obs_id = f'{bits[0]}_{bits[1]}_{bits[3]}'
+        obs_id = f'{bits[0]}_{bits[1]}'
         return obs_id
 
     @staticmethod
     def get_product_id_from_file_id(file_id):
-        result = 'kinematic_model'
+        ans = file_id.split("_")
+        if "Kin" in ans:
+            ans.remove("Kin")
+        fans = "_".join(ans[2:-1])    
+            
+                       
+        result = 'kinematic_model'+"_"+fans
         if (
             '_cube' in file_id
             or '_mom' in file_id
@@ -194,16 +201,15 @@ class WallabyName(mc.StorageName):
             or '_mask' in file_id
             or '_spec' in file_id
         ):
-            result = 'source_cube'
+            result = 'source_data'+"_"+fans
         return result
 
     @staticmethod
     def get_version(file_name):
         bits = file_name.split('_')
-        if len(bits) > 3:
-            return bits[3]
-        else:
-            return "DR2"
+        
+        return bits[-2]
+        
 
     @staticmethod
     def remove_extensions(file_name):
