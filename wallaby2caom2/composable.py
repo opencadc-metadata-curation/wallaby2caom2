@@ -71,12 +71,12 @@ import logging
 import sys
 import traceback
 
-from caom2pipe import client_composable as clc
-from caom2pipe import manage_composable as mc
-from caom2pipe import name_builder_composable as nbc
-from caom2pipe import reader_composable as rdc
-from caom2pipe import run_composable as rc
-from caom2pipe import transfer_composable as tc
+from caom2pipe.client_composable import ClientCollection
+from caom2pipe.manage_composable import Config, State, increment_time
+from caom2pipe.name_builder_composable import EntryBuilder
+from caom2pipe.reader_composable import VaultReader
+from caom2pipe.run_composable import run_single, run_by_state, run_by_todo
+from caom2pipe.transfer_composable import HttpTransfer, VoScienceTransfer
 from vos import Client
 from wallaby2caom2 import storage_name as sn
 from wallaby2caom2 import data_source, scrape, fits2caom2_augmentation
@@ -90,13 +90,13 @@ DATA_VISITORS = []
 
 def _run_single():
     """expects a single file name on the command line"""
-    builder = nbc.EntryBuilder(sn.WallabyName)
+    builder = EntryBuilder(sn.WallabyName)
     wallaby_name = builder.build(sys.argv[1])
-    return rc.run_single(
+    return run_single(
         storage_name=wallaby_name,
         meta_visitors=META_VISITORS,
         data_visitors=DATA_VISITORS,
-        store_transfer=tc.HttpTransfer(),
+        store_transfer=HttpTransfer(),
     )
 
 
@@ -120,16 +120,16 @@ def _run_state():
     'QA_REJECTED' is the only way to tell if the attribute 'requirements'
     should be set to 'fail', or not.
     """
-    config = mc.Config()
+    config = Config()
     config.get_executors()
-    state = mc.State(config.state_fqn)
+    state = State(config.state_fqn)
     # a way to get a datetime from a string, or maybe a datetime, depending
     # on the execution environment
-    start_time = mc.increment_time(state.get_bookmark(WALLABY_BOOKMARK), 0)
+    start_time = increment_time(state.get_bookmark(WALLABY_BOOKMARK), 0)
     todo_list, max_date = scrape.build_file_url_list(start_time)
     source = data_source.NraoPage(todo_list)
-    name_builder = nbc.EntryBuilder(sn.WallabyName)
-    return rc.run_by_state(
+    name_builder = EntryBuilder(sn.WallabyName)
+    return run_by_state(
         config=config,
         bookmark_name=WALLABY_BOOKMARK,
         meta_visitors=META_VISITORS,
@@ -137,7 +137,7 @@ def _run_state():
         name_builder=name_builder,
         source=source,
         end_time=max_date,
-        store_transfer=tc.HttpTransfer(),
+        store_transfer=HttpTransfer(),
     )
 
 
@@ -160,16 +160,16 @@ def _run():
     :return 0 if successful, -1 if there's any sort of failure. Return status
         is used by airflow for task instance management and reporting.
     """
-    config = mc.Config()
+    config = Config()
     config.get_executors()
     source_transfer = None
     vo_client = Client(vospace_certfile=config.proxy_fqn)
-    clients = clc.ClientCollection(config)
+    clients = ClientCollection(config)
     clients.vo_client = vo_client
     if config.use_vos:
-        source_transfer = tc.VoFitsTransfer(vo_client)
-    name_builder = nbc.EntryBuilder(sn.WallabyName)
-    return rc.run_by_todo(
+        source_transfer = VoScienceTransfer(vo_client)
+    name_builder = EntryBuilder(sn.WallabyName)
+    return run_by_todo(
         config=config,
         name_builder=name_builder,
         meta_visitors=META_VISITORS,
@@ -198,15 +198,15 @@ def _run_remote():
     :return 0 if successful, -1 if there's any sort of failure. Return status
         is used by airflow for task instance management and reporting.
     """
-    config = mc.Config()
+    config = Config()
     config.get_executors()
     vo_client = Client(vospace_certfile=config.proxy_fqn)
-    clients = clc.ClientCollection(config)
+    clients = ClientCollection(config)
     clients.vo_client = vo_client
-    source_transfer = tc.VoFitsTransfer(vo_client)
-    name_builder = nbc.EntryBuilder(sn.WallabyName)
-    reader = rdc.VaultReader(vo_client)
-    return rc.run_by_todo(
+    source_transfer = VoScienceTransfer(vo_client)
+    name_builder = EntryBuilder(sn.WallabyName)
+    reader = VaultReader(vo_client)
+    return run_by_todo(
         config=config,
         name_builder=name_builder,
         meta_visitors=META_VISITORS,
