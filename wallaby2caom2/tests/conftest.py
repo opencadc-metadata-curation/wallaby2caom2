@@ -3,7 +3,7 @@
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 #
-#  (c) 2018.                            (c) 2018.
+#  (c) 2023.                            (c) 2023.
 #  Government of Canada                 Gouvernement du Canada
 #  National Research Council            Conseil national de recherches
 #  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -67,43 +67,30 @@
 # ***********************************************************************
 #
 
-import logging
+from os.path import dirname, join, realpath
+from caom2pipe.manage_composable import Config, StorageName
+import pytest
 
-from caom2 import Observation, Requirements, Status
-from caom2pipe import manage_composable as mc
-from wallaby2caom2 import metadata
-
-START_DATE = '2019-01-01'
-
-
-def visit(observation, **kwargs):
-    mc.check_param(observation, Observation)
-
-    # conversation with JJK, PD 2018-08-27 - use the observation-level
-    # data quality flag.
-    #
-    # There's no header information, so get the list of QA rejected files
-    # from URLs that look like this:
-    #
-    # https://archive-new.nrao.edu/vlass/quicklook/VLASS*/QA_REJECTED/#
-    #
-    # and compare against that list. The list gets items added/removed over
-    # time.
-
-    count = 0
-    original = observation.requirements
-    if metadata.cache.is_qa_rejected(observation.observation_id):
-        observation.requirements = Requirements(Status.FAIL)
-    else:
-        observation.requirements = None
-    if observation.requirements != original:
-        logging.warning(f'Changed requirements to {observation.requirements} '
-                        f'for {observation.observation_id}.')
-        count = 1
-    logging.info(
-        f'Completed quality augmentation for {observation.observation_id}')
-    return {'observations': count}
+COLLECTION = 'WALLABY'
+SCHEME = 'cadc'
+PREVIEW_SCHEME = 'cirada'
 
 
-def _set_failed(observation):
-    observation.requirements = Requirements(Status.FAIL)
+@pytest.fixture()
+def test_config():
+    config = Config()
+    config.collection = COLLECTION
+    config.preview_scheme = PREVIEW_SCHEME
+    config.scheme = SCHEME
+    config.logging_level = 'INFO'
+    StorageName.collection = config.collection
+    StorageName.preview_scheme = config.preview_scheme
+    StorageName.scheme = config.scheme
+    return config
+
+
+@pytest.fixture()
+def test_data_dir():
+    this_dir = dirname(realpath(__file__))
+    fqn = join(this_dir, 'data')
+    return fqn

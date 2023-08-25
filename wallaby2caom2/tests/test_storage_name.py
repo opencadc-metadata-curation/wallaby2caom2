@@ -72,7 +72,7 @@ from os.path import basename
 from wallaby2caom2 import storage_name as sn
 
 
-def test_storage_name():
+def test_storage_name(test_config):
     test_f_name = 'WALLABY_J100342-270137_AverageModelCube_v2.fits'
     test_url = (
         f'vos:cirada/emission/PilotFieldReleases_Jun2021/'
@@ -87,7 +87,7 @@ def test_storage_name():
         assert ts.file_name == basename(test_url), 'wrong fname'
         assert ts.file_id == expected_fid, 'wrong fid'
         assert (
-            ts.file_uri == f'{sn.SCHEME}:{sn.COLLECTION}/{basename(test_url)}'
+            ts.file_uri == f'{test_config.scheme}:{test_config.collection}/{basename(test_url)}'
         ), 'wrong uri'
         assert ts.model_file_name == f'{expected_obs_id}.xml', 'wrong model'
         assert ts.log_file == f'{expected_obs_id}.log', 'wrong log file'
@@ -96,9 +96,9 @@ def test_storage_name():
             ts.thumb == f'{expected_fid}_prev_256.jpg'
         ), 'wrong thumbnail'
         assert (
-            ts.prev_uri == f'{sn.CIRADA_SCHEME}:{sn.COLLECTION}/{ts.prev}'
+            ts.prev_uri == f'{test_config.preview_scheme}:{test_config.collection}/{ts.prev}'
         ), 'wrong preview uri'
         assert (
-            ts.thumb_uri == f'{sn.CIRADA_SCHEME}:{sn.COLLECTION}/{ts.thumb}'
+            ts.thumb_uri == f'{test_config.preview_scheme}:{test_config.collection}/{ts.thumb}'
         ), 'wrong thumbnail uri'
         assert len(ts.source_names) == 1, 'wrong length'

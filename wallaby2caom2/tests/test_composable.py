@@ -68,132 +68,19 @@
 #
 
 import os
-import pytest
 
 from cadcdata import FileInfo
 from collections import deque
-from datetime import datetime, timezone, timedelta
-from mock import ANY, call, patch, Mock
-from tempfile import TemporaryDirectory
+from mock import call, patch, Mock
 
 from caom2pipe import astro_composable as ac
 from caom2pipe import execute_composable as ec
 from caom2pipe import manage_composable as mc
-from caom2utils import get_gen_proc_arg_parser
-from caom2 import SimpleObservation, Algorithm
 from wallaby2caom2 import composable, storage_name
-import test_main_app
-import test_scrape
-
-STATE_FILE = os.path.join(test_main_app.TEST_DATA_DIR, 'state.yml')
 
 
-@patch('caom2pipe.reader_composable.VaultReader')
-@patch('cadcutils.net.ws.WsCapabilities.get_access_url')
-@patch('caom2pipe.execute_composable.OrganizeExecutes.do_one')
-@patch('wallaby2caom2.composable.Client', autospec=True)
-def test_run_remote(
-    data_client_mock, exec_mock, access_mock, reader_mock
-):
-    test_f_name = 'WALLABY_J100342-270137_AverageModelCube_v2.fits'
-    test_uri = f'vos:goliaths/test/{test_f_name}'
-    access_mock.return_value = 'https://localhost'
-    data_client_mock.return_value.listdir.return_value = [test_f_name]
-    test_node = type('', (), {})()
-    test_node.props = {
-        'length': 42,
-        'MD5': '1234',
-    }
-    test_node.uri = test_uri
-    test_node.type = 'vos:DataNode'
-    test_node.node_list = [test_node]
-    data_client_mock.return_value.get_node.return_value = test_node
-
-    exec_mock.return_value = 0
-
-    getcwd_orig = os.getcwd
-    os.getcwd = Mock(return_value=test_main_app.TEST_DATA_DIR)
-
-    test_config = mc.Config()
-    test_config.get_executors()
-
-    try:
-        # execution
-        test_result = composable._run_remote()
-        assert test_result == 0, 'wrong result'
-    finally:
-        for ii in [
-            test_config.work_fqn,
-            test_config.failure_fqn,
-            test_config.rejected_fqn,
-            test_config.report_fqn,
-            test_config.retry_fqn,
-            test_config.success_fqn,
-        ]:
-            if os.path.exists(ii):
-                os.unlink(ii)
-        os.getcwd = getcwd_orig
-
-    assert exec_mock.called, 'expect exec call'
-    test_parameter = exec_mock.call_args.args[0]
-    assert isinstance(test_parameter, storage_name.WallabyName), 'wromg type'
-    assert test_parameter.obs_id == 'WALLABY_J100342-270137'
-    assert (
-        test_parameter.source_names[0] ==
-        'vos:goliaths/test/WALLABY_J100342-270137_AverageModelCube_v2.fits'
-    ), 'wrong source name'
-    assert (
-        test_parameter.destination_uris[0] ==
-        'cadc:WALLABY/WALLABY_J100342-270137_AverageModelCube_v2.fits'
-    ), 'wrong destination uri'
-    assert (
-        test_parameter.file_uri ==
-        'cadc:WALLABY/WALLABY_J100342-270137_AverageModelCube_v2.fits'
-    ), 'wrong file uri'
-
-
-@pytest.mark.skip('')
-@patch('wallaby2caom2.to_caom2')
-@patch('caom2pipe.manage_composable.query_endpoint_session')
-@patch('caom2pipe.client_composable.CAOM2RepoClient')
-@patch('caom2pipe.client_composable.StorageClientWrapper')
-@patch('cadcdata.CadcDataClient.get_file_info')
-def test_run_state(
-    get_file_info_mock,
-    data_client_mock,
-    repo_client_mock,
-    query_mock,
-    to_caom2_mock,
-):
-    test_start_time = datetime.now(tz=timezone.utc) - timedelta(minutes=5)
-    test_bookmark = {
-        'bookmarks': {
-            'wallaby_timestamp': {'last_record': test_start_time},
-        },
-    }
-    mc.write_as_yaml(test_bookmark, STATE_FILE)
-
-    query_mock.side_effect = test_scrape._query_endpoint
-    repo_client_mock.return_value.read.return_value = None
-    to_caom2_mock.side_effect = _write_obs_mock
-    get_file_info_mock.side_effect = _mock_get_file_info
-    getcwd_orig = os.getcwd
-    os.getcwd = Mock(return_value=test_main_app.TEST_DATA_DIR)
-    try:
-        test_result = composable._run_state()
-        assert test_result is not None, 'expect result'
-        assert test_result == 0, 'expect success'
-    finally:
-        os.getcwd = getcwd_orig
-        for entry in [STATE_FILE]:
-            if os.path.exists(entry):
-                os.unlink(entry)
-
-
-def test_store():
-    test_config = mc.Config()
-    test_config.logging_level = 'ERROR'
-    test_config.working_directory = '/tmp'
+def test_store(test_config):
+    test_config.change_working_directory('/tmp')
     test_f_name = 'WALLABY_J100342-270137_AverageModelCube_v2.fits'
     test_url = (
         f'vos:cirada/emission/PilotFieldReleases_Jun2021/'
@@ -205,21 +92,15 @@ def test_store():
     cadc_data_client = Mock()
     clients_mock = Mock()
     clients_mock.data_client = cadc_data_client
-    observable = mc.Observable(
-        mc.Rejected('/tmp/rejected.yml'), mc.Metrics(test_config))
-    test_subject = ec.Store(
-        test_config,
-        test_storage_name,
-        observable,
-        transferrer,
-        clients_mock,
-    )
-    test_subject.execute(None)
+    observable = mc.Observable(test_config)
+    reader_mock = Mock()
+    test_subject = ec.Store(test_config, observable, clients_mock, reader_mock, transferrer)
+    test_context = {'storage_name': test_storage_name}
+    test_subject.execute(test_context)
     assert cadc_data_client.put.called, 'expect a call'
     cadc_data_client.put.assert_called_with(
         '/tmp/WALLABY_J100342-270137',
-        f'{storage_name.SCHEME}:{storage_name.COLLECTION}/{test_f_name}',
-        None,
+        f'{test_storage_name.scheme}:{test_storage_name.collection}/{test_f_name}',
     ), 'wrong put args'
     assert transferrer.get.called, 'expect a transfer call'
     transferrer.get.assert_called_with(
@@ -228,7 +109,7 @@ def test_store():
     ), 'wrong transferrer args'
 
 
-@patch('caom2pipe.reader_composable.FileMetadataReader._retrieve_headers')
+@patch('caom2utils.data_util.get_local_headers_from_fits')
 @patch('cadcutils.net.ws.WsCapabilities.get_access_url')
 @patch('caom2pipe.execute_composable.CaomExecute._caom2_read')
 @patch('caom2pipe.execute_composable.CaomExecute._caom2_store')
@@ -239,44 +120,41 @@ def test_run_use_local_files(
     caom2_read_mock,
     access_url_mock,
     headers_mock,
+    test_data_dir,
+    test_config,
+    tmp_path,
 ):
     access_url_mock.return_value = 'https://localhost:8080'
     headers_mock.side_effect = ac.make_headers_from_file
     caom2_read_mock.return_value = None
     cwd = os.getcwd()
-    with TemporaryDirectory() as tmp_dir_name:
-        os.chdir(tmp_dir_name)
-        test_config = mc.Config()
-        test_config.working_directory = tmp_dir_name
-        test_config.task_types = [mc.TaskType.INGEST]
-        test_config.logging_level = 'DEBUG'
-        test_config.collection = 'WALLABY'
-        test_config.proxy_file_name = 'cadcproxy.pem'
-        test_config.proxy_fqn = f'{tmp_dir_name}/cadcproxy.pem'
-        test_config.features.supports_latest_client = False
-        test_config.use_local_files = True
-        test_config.data_sources = [test_main_app.TEST_DATA_DIR]
-        test_config.data_source_extensions = ['.fits.header']
-        mc.Config.write_to_file(test_config)
-        with open(test_config.proxy_fqn, 'w') as f:
-            f.write('test content')
-        getcwd_orig = os.getcwd
-        os.getcwd = Mock(return_value=tmp_dir_name)
-        try:
-            test_result = composable._run()
-            assert test_result is not None, 'expect result'
-            assert test_result == 0, 'expect success'
-            assert meta_visit_mock.called, '_visit_meta call'
-            assert meta_visit_mock.call_count == 6, '_visit_meta call count'
-            assert caom2_read_mock.called, '_caom2_store call'
-            assert caom2_read_mock.call_count == 6, '_caom2_store call count'
-            assert caom2_store_mock.called, '_caom2_store call'
-            assert caom2_store_mock.call_count == 6, '_caom2_store call count'
-        finally:
-            os.getcwd = getcwd_orig
-            os.chdir(cwd)
+    os.chdir(tmp_path)
+    test_config.change_working_directory(tmp_path.as_posix())
+    test_config.task_types = [mc.TaskType.INGEST]
+    test_config.proxy_file_name = 'cadcproxy.pem'
+    test_config.use_local_files = True
+    test_config.data_sources = [test_data_dir]
+    test_config.data_source_extensions = ['.fits.header']
+    with open(test_config.proxy_fqn, 'w') as f:
+        f.write('test content')
+    mc.Config.write_to_file(test_config)
+    try:
+        test_result = composable._run()
+        assert test_result is not None, 'expect result'
+        assert test_result == 0, 'expect success'
+        assert meta_visit_mock.called, '_visit_meta call'
+        # 14 == number of test files
+        assert meta_visit_mock.call_count == 14, '_visit_meta call count'
+        assert caom2_read_mock.called, '_caom2_store call'
+        assert caom2_read_mock.call_count == 14, '_caom2_store call count'
+        assert caom2_store_mock.called, '_caom2_store call'
+        assert caom2_store_mock.call_count == 14, '_caom2_store call count'
+    finally:
+        os.chdir(cwd)
 
 
+@patch('vos.Client')
+@patch('caom2pipe.client_composable.ClientCollection')
 @patch('caom2pipe.reader_composable.VaultReader._retrieve_file_info')
 @patch('caom2pipe.data_source_composable.VaultDataSource.get_work')
 @patch('caom2pipe.reader_composable.VaultReader._retrieve_headers')
@@ -292,14 +170,17 @@ def test_run_use_local_files_false(
     headers_mock,
     get_work_mock,
     file_info_mock,
+    clients_mock,
+    vos_client_mock,
+    test_data_dir,
+    test_config,
+    tmp_path,
 ):
     access_url_mock.return_value = 'https://localhost:8080'
 
-    def _make_headers(fqn):
+    def _make_headers(ign, fqn):
         temp = os.path.basename(fqn)
-        return ac.make_headers_from_file(
-            f'{test_main_app.TEST_DATA_DIR}/{temp}.header'
-        )
+        return ac.make_headers_from_file(f'{test_data_dir}/dr1/{temp}.header')
     headers_mock.side_effect = _make_headers
     f_name1 = (
         'vos:goliaths/test/'
@@ -308,6 +189,8 @@ def test_run_use_local_files_false(
     f_name2 = (
         'vos:goliaths/test/WALLABY_J101035-254920_AverageModelCube_v3.fits'
     )
+    f_uri1 = f'{test_config.scheme}:{test_config.collection}/{os.path.basename(f_name1)}'
+    f_uri2 = f'{test_config.scheme}:{test_config.collection}/{os.path.basename(f_name2)}'
     temp_queue = deque()
     temp_queue.append(f_name1)
     temp_queue.append(f_name2)
@@ -319,90 +202,31 @@ def test_run_use_local_files_false(
     file_info_mock.side_effect = [f1, f2]
 
     cwd = os.getcwd()
-    with TemporaryDirectory() as tmp_dir_name:
-        os.chdir(tmp_dir_name)
-        test_config = mc.Config()
-        test_config.working_directory = tmp_dir_name
-        test_config.task_types = [mc.TaskType.INGEST]
-        test_config.logging_level = 'INFO'
-        test_config.collection = 'WALLABY'
-        test_config.proxy_file_name = 'cadcproxy.pem'
-        test_config.proxy_fqn = f'{tmp_dir_name}/cadcproxy.pem'
-        test_config.features.supports_latest_client = False
-        test_config.use_local_files = False
-        test_config.data_sources = ['vos:goliaths/test']
-        test_config.data_source_extensions = ['.fits', '.txt']
-        mc.Config.write_to_file(test_config)
-        with open(test_config.proxy_fqn, 'w') as f:
-            f.write('test content')
-        getcwd_orig = os.getcwd
-        os.getcwd = Mock(return_value=tmp_dir_name)
-        try:
-            test_result = composable._run()
-            assert test_result is not None, 'expect result'
-            assert test_result == 0, 'expect success'
-            assert meta_visit_mock.called, '_visit_meta call'
-            assert meta_visit_mock.call_count == 2, '_visit_meta call count'
-            assert caom2_read_mock.called, '_caom2_store call'
-            assert caom2_read_mock.call_count == 2, '_caom2_store call count'
-            assert caom2_store_mock.called, '_caom2_store call'
-            assert caom2_store_mock.call_count == 2, '_caom2_store call count'
-            assert file_info_mock.call_count == 2, 'wrong file info call count'
-            info_calls = [call(f_name1), call(f_name2)]
-            file_info_mock.assert_has_calls(info_calls), 'file_info calls'
-            assert headers_mock.call_count == 2, 'wrong headers call count'
-            headers_mock.assert_has_calls(info_calls), 'headers calls'
-        finally:
-            os.getcwd = getcwd_orig
-            os.chdir(cwd)
-
-
-def _mock_service_query():
-    return None
-
-
-def _mock_get_file_info(arg1):
-    return {'name': arg1.split('/')[-1]}
-
-
-def _mock_get_file():
-    return None
-
-
-def _mock_repo_read(arg1, arg2):
-    return None
-
-
-def _mock_repo_update():
-    assert True
-
-
-def _mock_get_cadc_headers(archive, file_id):
-    return {'md5sum': 'md5:abc123'}
-
-
-def _mock_x(archive, file_id, b, fhead):
-    from astropy.io import fits
-
-    x = """SIMPLE  =                    T / Written by IDL:  Fri Oct  6 01:48:35 2017
-BITPIX  =                  -32 / Bits per pixel
-NAXIS   =                    2 / Number of dimensions
-NAXIS1  =                 2048 /
-NAXIS2  =                 2048 /
-DATATYPE= 'REDUC   '           /Data type, SCIENCE/CALIB/REJECT/FOCUS/TEST
-TYPE    = 'image  '
-END
-"""
-    delim = '\nEND'
-    extensions = \
-        [e + delim for e in x.split(delim) if e.strip()]
-    headers = [fits.Header.fromstring(e, sep='\n') for e in extensions]
-    return headers
-
-
-def _write_obs_mock():
-    args = get_gen_proc_arg_parser().parse_args()
-    obs = SimpleObservation(collection=args.observation[0],
-                            observation_id=args.observation[1],
-                            algorithm=Algorithm(name='exposure'))
-    mc.write_obs_to_file(obs, args.out_obs_xml)
+    os.chdir(tmp_path)
+    test_config.change_working_directory(tmp_path.as_posix())
+    test_config.task_types = [mc.TaskType.INGEST]
+    test_config.logging_level = 'INFO'
+    test_config.proxy_file_name = 'cadcproxy.pem'
+    test_config.use_local_files = False
+    test_config.data_sources = ['vos:goliaths/test']
+    test_config.data_source_extensions = ['.fits', '.txt']
+    mc.Config.write_to_file(test_config)
+    with open(test_config.proxy_fqn, 'w') as f:
+        f.write('test content')
+    try:
+        test_result = composable._run()
+        assert test_result is not None, 'expect result'
+        assert test_result == 0, 'expect success'
+        assert meta_visit_mock.called, '_visit_meta call'
+        assert meta_visit_mock.call_count == 2, '_visit_meta call count'
+        assert caom2_read_mock.called, '_caom2_store call'
+        assert caom2_read_mock.call_count == 2, '_caom2_store call count'
+        assert caom2_store_mock.called, '_caom2_store call'
+        assert caom2_store_mock.call_count == 2, '_caom2_store call count'
+        assert file_info_mock.call_count == 2, 'wrong file info call count'
+        info_calls = [call(f_uri1, f_name1), call(f_uri2, f_name2)]
+        file_info_mock.assert_has_calls(info_calls), 'file_info calls'
+        assert headers_mock.call_count == 2, 'wrong headers call count'
+        headers_mock.assert_has_calls(info_calls), 'headers calls'
+    finally:
+        os.chdir(cwd)

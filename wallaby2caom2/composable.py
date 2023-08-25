@@ -72,14 +72,14 @@ import sys
 import traceback
 
 from caom2pipe.client_composable import ClientCollection
-from caom2pipe.manage_composable import Config, State, increment_time
+from caom2pipe.manage_composable import Config
 from caom2pipe.name_builder_composable import EntryBuilder
 from caom2pipe.reader_composable import VaultReader
-from caom2pipe.run_composable import run_single, run_by_state, run_by_todo
+from caom2pipe.run_composable import run_single, run_by_todo
 from caom2pipe.transfer_composable import HttpTransfer, VoScienceTransfer
 from vos import Client
 from wallaby2caom2 import storage_name as sn
-from wallaby2caom2 import data_source, scrape, fits2caom2_augmentation
+from wallaby2caom2 import fits2caom2_augmentation
 
 
 WALLABY_BOOKMARK = 'wallaby_timestamp'
@@ -104,47 +104,6 @@ def run_single():
     """Wraps _run_single in exception handling."""
     try:
         result = _run_single()
-        sys.exit(result)
-    except Exception as e:
-        logging.error(e)
-        tb = traceback.format_exc()
-        logging.debug(tb)
-        sys.exit(-1)
-
-
-def _run_state():
-    """Uses a state file with a timestamp to control which quicklook
-    files will be retrieved from VLASS.
-
-    Ingestion is based on URLs, because a URL that contains the phrase
-    'QA_REJECTED' is the only way to tell if the attribute 'requirements'
-    should be set to 'fail', or not.
-    """
-    config = Config()
-    config.get_executors()
-    state = State(config.state_fqn)
-    # a way to get a datetime from a string, or maybe a datetime, depending
-    # on the execution environment
-    start_time = increment_time(state.get_bookmark(WALLABY_BOOKMARK), 0)
-    todo_list, max_date = scrape.build_file_url_list(start_time)
-    source = data_source.NraoPage(todo_list)
-    name_builder = EntryBuilder(sn.WallabyName)
-    return run_by_state(
-        config=config,
-        bookmark_name=WALLABY_BOOKMARK,
-        meta_visitors=META_VISITORS,
-        data_visitors=DATA_VISITORS,
-        name_builder=name_builder,
-        source=source,
-        end_time=max_date,
-        store_transfer=HttpTransfer(),
-    )
-
-
-def run_state():
-    """Wraps _run_state in exception handling."""
-    try:
-        result = _run_state()
         sys.exit(result)
     except Exception as e:
         logging.error(e)
@@ -183,44 +142,6 @@ def run():
     """Wraps _run in exception handling."""
     try:
         result = _run()
-        sys.exit(result)
-    except Exception as e:
-        logging.error(e)
-        tb = traceback.format_exc()
-        logging.debug(tb)
-        sys.exit(-1)
-
-
-def _run_remote():
-    """
-    Uses a VOSpace directory listing to identify the work to be done.
-
-    :return 0 if successful, -1 if there's any sort of failure. Return status
-        is used by airflow for task instance management and reporting.
-    """
-    config = Config()
-    config.get_executors()
-    vo_client = Client(vospace_certfile=config.proxy_fqn)
-    clients = ClientCollection(config)
-    clients.vo_client = vo_client
-    source_transfer = VoScienceTransfer(vo_client)
-    name_builder = EntryBuilder(sn.WallabyName)
-    reader = VaultReader(vo_client)
-    return run_by_todo(
-        config=config,
-        name_builder=name_builder,
-        meta_visitors=META_VISITORS,
-        data_visitors=DATA_VISITORS,
-        store_transfer=source_transfer,
-        metadata_reader=reader,
-        clients=clients,
-    )
-
-
-def run_remote():
-    """Wraps _run_remote in exception handling, with sys.exit calls."""
-    try:
-        result = _run_remote()
         sys.exit(result)
     except Exception as e:
         logging.error(e)

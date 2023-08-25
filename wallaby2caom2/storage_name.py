@@ -67,75 +67,59 @@
 # ***********************************************************************
 #
 
-from os.path import basename
-from urllib.parse import urlparse
-from caom2pipe import caom_composable as cc
+from caom2 import ProductType
 from caom2pipe import manage_composable as mc
-from wallaby2caom2 import scrape
 
 
-__all__ = [
-    'APPLICATION', 'COLLECTION', 'COLLECTION_PATTERN', 'SCHEME', 'WallabyName'
-]
-COLLECTION = 'WALLABY'
-APPLICATION = 'wallaby2caom2'
-SCHEME = 'cadc'
+__all__ = ['WallabyName']
+
 CIRADA_SCHEME = 'cirada'
 COLLECTION_PATTERN = '*'  # TODO what are acceptable naming patterns?
 
 
 class WallabyName(mc.StorageName):
-    """Isolate the relationship between the observation id and the
-    file names.
+    """Isolate the relationship between the observation id and the file names. """
 
-    Isolate the zipped/unzipped nature of the file names.
+    def __init__(self, entry=None, file_name=None, source_names=None):
+        if file_name is None:
+            file_name = mc.CaomName.extract_file_name(entry).replace('.header', '')
+        if source_names is None:
+            source_names = [entry]
+        super().__init__(file_name=file_name, source_names=source_names)
 
-    While tempting, it's not possible to recreate URLs from file names,
-    because some of the URLs are from the QA_REJECTED directories, hence
-    the absence of that functionality in this class.
-    """
+    def get_calibration_level(self):
+        result = 2
+        if 'High-Res' in self._file_name:
+            result = 3
+        return result
 
-    def __init__(
-        self,
-        entry=None,
-    ):
-        self.collection = COLLECTION
-        self._entry = entry.replace('.header', '')
-        self._vos_url = None
-        temp = urlparse(entry.replace('.header', ''))
-        if temp.scheme == '':
-            self._url = None
-            self._file_name = basename(entry.replace('.header', ''))
+    def get_data_product_type(self):
+        result = 'cube'
+        if '_mom' in self._file_name or '_snr' in self._file_name:
+            result = 'image'
+        return result
+    
+    def get_product_type(self):
+        if '.rms.' in self._file_name:
+            return ProductType.NOISE
+        elif self._file_name.endswith('.png'):
+            return ProductType.THUMBNAIL
+        elif (
+            self._file_name.endswith('.txt')
+            or 'ModelGeometry' in self._file_name
+            or 'ModelRotationCurve' in self._file_name
+            or 'ModelSurfaceDensity' in self._file_name
+        ):
+            return ProductType.AUXILIARY
         else:
-            if temp.scheme.startswith('http') or temp.scheme.startswith('vos'):
-                self._url = entry.replace('.header', '')
-                self._file_name = basename(temp.path)
-                self._vos_url = entry.replace('.header', '')
-            else:
-                # it's an Artifact URI
-                self._url = None
-                self._file_name = temp.path.split('/')[-1]
-        self._file_id = WallabyName.remove_extensions(self._file_name)
-        self._obs_id = WallabyName.get_obs_id_from_file_name(self._file_id)
-        self._product_id = WallabyName.get_product_id_from_file_id(
-            self._file_id
-        )
-        self._version = WallabyName.get_version(self._file_name)
-        self._scheme = SCHEME
-        self._source_names = [entry]
-        self._destination_uris = [self.file_uri]
+            return ProductType.SCIENCE
 
-    @property
-    def file_id(self):
-        return self._file_id
+    def get_proposal_id(self):
+        bits = self._file_name.split('.')
+        return f'{bits[0]}.{bits[1]}'
 
-    @property
-    def file_uri(self):
-        return self._get_uri(self._file_name, SCHEME)
-
-    @property
-    def file_name(self):
-        return self._file_name
+    def is_dr2(self):
+        return self._file_name == self._product_id
 
     @property
     def prev(self):
@@ -146,18 +130,6 @@ class WallabyName(mc.StorageName):
         return self._get_uri(self.prev, CIRADA_SCHEME)
 
     @property
-    def product_id(self):
-        return WallabyName.get_product_id_from_file_id(self._file_id)
-
-    @property
-    def scheme(self):
-        return self._scheme
-
-    @property
-    def source_names(self):
-        return self._source_names
-
-    @property
     def thumb(self):
         return f'{self._file_id}_prev_256.jpg'
 
@@ -165,51 +137,38 @@ class WallabyName(mc.StorageName):
     def thumb_uri(self):
         return self._get_uri(self.thumb, CIRADA_SCHEME)
 
-    def is_valid(self):
-        return True
-
     @property
     def version(self):
         return self._version
 
-    def _get_uri(self, file_name, scheme):
-        return cc.build_artifact_uri(file_name, self.collection, scheme)
+    def set_obs_id(self, **kwargs):        
+        bits = self._file_id.split('_')
+        self._obs_id = f'{bits[0]}_{bits[1]}'
 
-    @staticmethod
-    def get_obs_id_from_file_name(file_id):
-        """The obs id is made of the VLASS epoch, tile name, and image centre
-        from the file name.
-        """
-        
-        bits = file_id.split('_')
-        obs_id = f'{bits[0]}_{bits[1]}'
-        return obs_id
-
-    @staticmethod
-    def get_product_id_from_file_id(file_id):
-        ans = file_id.split("_")
-        if "Kin" in ans:
-            ans.remove("Kin")
-        fans = "_".join(ans[2:-1])    
-            
-                       
-        result = 'kinematic_model'+"_"+fans
-        if (
-            '_cube' in file_id
-            or '_mom' in file_id
-            or '_chan' in file_id
-            or '_mask' in file_id
-            or '_spec' in file_id
-        ):
-            result = 'source_data'+"_"+fans
-        return result
-
+    def set_product_id(self, **kwargs):
+        if 'SoFiA' in self._file_id or 'High-Res' in self._file_id:
+            result = self._file_id 
+        else:
+            ans = self._file_id.split("_")
+            if "Kin" in ans:
+                ans.remove("Kin")
+            fans = "_".join(ans[2:-1])    
+                        
+            result = 'kinematic_model'+"_"+fans
+            if (
+                '_cube' in self._file_id
+                or '_mom' in self._file_id
+                or '_chan' in self._file_id
+                or '_mask' in self._file_id
+                or '_spec' in self._file_id
+            ):
+                result = 'source_data'+"_"+fans
+        self._product_id = result
+       
     @staticmethod
     def get_version(file_name):
-        bits = file_name.split('_')
-        
+        bits = file_name.split('_')        
         return bits[-2]
-        
 
     @staticmethod
     def remove_extensions(file_name):

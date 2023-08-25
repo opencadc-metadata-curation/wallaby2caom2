@@ -67,6 +67,7 @@
 # ***********************************************************************
 #
 
+from os import unlink
 from os.path import dirname, exists, join, realpath
 
 from cadcdata import FileInfo
@@ -79,19 +80,16 @@ from caom2.diff import get_differences
 import glob
 
 
-TEST_URI = 'ad:TEST_COLLECTION/test_file.fits'
-
 THIS_DIR = dirname(realpath(__file__))
 TEST_DATA_DIR = join(THIS_DIR, 'data')
-PLUGIN = join(dirname(THIS_DIR), 'main_app.py')
 
 
 def pytest_generate_tests(metafunc):
-    obs_id_list = glob.glob(f'{TEST_DATA_DIR}/*.fits.header')
+    obs_id_list = glob.glob(f'{TEST_DATA_DIR}/dr2/*.fits.header')
     metafunc.parametrize('test_name', obs_id_list)
 
 
-def test_visitor(test_name):
+def test_visitor(test_config, test_name):
     wallaby_name = storage_name.WallabyName(
         test_name.replace('.header', ''),
     )
@@ -107,22 +105,30 @@ def test_visitor(test_name):
         'metadata_reader': metadata_reader,
     }
     observation = None
-    input_file = f'{TEST_DATA_DIR}/in.{wallaby_name.product_id}.fits.xml'
+    input_file = f'{dirname(test_name)}/in.{wallaby_name.product_id}.fits.xml'
     if exists(input_file):
         observation = mc.read_obs_from_file(input_file)
+    expected_fqn = f'{dirname(test_name)}/{wallaby_name.file_id}.expected.xml'
+    actual_fqn = expected_fqn.replace('expected', 'actual')
+    if exists(actual_fqn):
+        unlink(actual_fqn)
+
     observation = fits2caom2_augmentation.visit(observation, **kwargs)
 
-    expected_fqn = (
-        f'{TEST_DATA_DIR}/{wallaby_name.obs_id}.expected.xml'
-    )
-    expected = mc.read_obs_from_file(expected_fqn)
-    compare_result = get_differences(expected, observation)
-    if compare_result is not None:
-        actual_fqn = expected_fqn.replace('expected', 'actual')
-        mc.write_obs_to_file(observation, actual_fqn)
-        compare_text = '\n'.join([r for r in compare_result])
-        msg = (
-            f'Differences found in observation {expected.observation_id}\n'
-            f'{compare_text}'
-        )
-        raise AssertionError(msg)
+    if observation is None:
+        assert False, f'No Observation for {test_name}'
+    else:
+        if exists(expected_fqn):
+            expected = mc.read_obs_from_file(expected_fqn)
+            compare_result = get_differences(expected, observation)
+            if compare_result is not None:
+                mc.write_obs_to_file(observation, actual_fqn)
+                compare_text = '\n'.join([r for r in compare_result])
+                msg = (
+                    f'Differences found in observation {expected.observation_id}\n'
+                    f'{compare_text}'
+                )
+                raise AssertionError(msg)
+        else:
+            mc.write_obs_to_file(observation, actual_fqn)
+            assert False, f'No expected file {expected_fqn} for {test_name}'
