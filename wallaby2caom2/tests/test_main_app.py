@@ -103,6 +103,7 @@ def test_visitor(test_config, test_name):
     kwargs = {
         'storage_name': wallaby_name,
         'metadata_reader': metadata_reader,
+        'config': test_config,
     }
     observation = None
     input_file = f'{dirname(test_name)}/in.{wallaby_name.product_id}.fits.xml'

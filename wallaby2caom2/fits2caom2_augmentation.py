@@ -92,9 +92,13 @@ class Wallaby2Caom2Visitor(Fits2caom2Visitor):
 
     def _get_mapping(self, headers):
         if self._storage_name.is_dr2():
-            self._telescope = DR2(self._storage_name, headers, self._clients, self._observable, self._observation)
+            self._telescope = DR2(
+                self._storage_name, headers, self._clients, self._observable, self._observation, self._config
+            )
         else:
-            self._telescope = Telescope(self._storage_name, headers, self._clients, self._observable, self._observation)
+            self._telescope = Telescope(
+                self._storage_name, headers, self._clients, self._observable, self._observation, self._config
+            )
         return self._telescope
 
 

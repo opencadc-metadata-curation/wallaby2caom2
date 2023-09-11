@@ -100,8 +100,8 @@ class Telescope(TelescopeMapping):
 
     value_repair = WallabyValueRepair()
 
-    def __init__(self, storage_name, headers, clients, observable, observation):
-        super().__init__(storage_name, headers, clients, observable, observation)
+    def __init__(self, storage_name, headers, clients, observable, observation, config):
+        super().__init__(storage_name, headers, clients, observable, observation, config)
 
     def accumulate_blueprint(self, bp):
         """Configure the VLASS-specific ObsBlueprint for the CAOM model
@@ -226,8 +226,8 @@ class Telescope(TelescopeMapping):
 
 class DR2(Telescope):
 
-    def __init__(self, storage_name, headers, clients, observable, observation):
-        super().__init__(storage_name, headers, clients, observable, observation)
+    def __init__(self, storage_name, headers, clients, observable, observation, config):
+        super().__init__(storage_name, headers, clients, observable, observation, config)
 
     def accumulate_blueprint(self, bp):
         super().accumulate_blueprint(bp)
