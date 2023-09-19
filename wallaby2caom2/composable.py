@@ -72,6 +72,7 @@ import sys
 import traceback
 
 from caom2pipe.client_composable import ClientCollection
+from caom2pipe.data_source_composable import VaultDataSource
 from caom2pipe.manage_composable import Config
 from caom2pipe.name_builder_composable import EntryBuilder
 from caom2pipe.reader_composable import VaultReader
@@ -79,13 +80,13 @@ from caom2pipe.run_composable import run_single, run_by_todo
 from caom2pipe.transfer_composable import HttpTransfer, VoScienceTransfer
 from vos import Client
 from wallaby2caom2 import storage_name as sn
-from wallaby2caom2 import fits2caom2_augmentation
+from wallaby2caom2 import fits2caom2_augmentation, preview_augmentation
 
 
 WALLABY_BOOKMARK = 'wallaby_timestamp'
 
 META_VISITORS = [fits2caom2_augmentation]
-DATA_VISITORS = []
+DATA_VISITORS = [preview_augmentation]
 
 
 def _run_single():
@@ -142,6 +143,45 @@ def run():
     """Wraps _run in exception handling."""
     try:
         result = _run()
+        sys.exit(result)
+    except Exception as e:
+        logging.error(e)
+        tb = traceback.format_exc()
+        logging.debug(tb)
+        sys.exit(-1)
+
+
+def _run_remote():
+    """
+    Uses a VOSpace directory listing to identify the work to be done.
+
+    :return 0 if successful, -1 if there's any sort of failure.
+    """
+    config = Config()
+    config.get_executors()
+    vo_client = Client(vospace_certfile=config.proxy_fqn)
+    clients = ClientCollection(config)
+    clients.vo_client = vo_client
+    source_transfer = VoScienceTransfer(vo_client)
+    name_builder = EntryBuilder(sn.WallabyName)
+    reader = VaultReader(vo_client)
+    data_source = VaultDataSource(vo_client, config)
+    return run_by_todo(
+        config=config,
+        name_builder=name_builder,
+        meta_visitors=META_VISITORS,
+        data_visitors=DATA_VISITORS,
+        store_transfer=source_transfer,
+        metadata_reader=reader,
+        clients=clients,
+        sources=[data_source],
+    )
+
+
+def run_remote():
+    """Wraps _run_remote in exception handling, with sys.exit calls."""
+    try:
+        result = _run_remote()
         sys.exit(result)
     except Exception as e:
         logging.error(e)

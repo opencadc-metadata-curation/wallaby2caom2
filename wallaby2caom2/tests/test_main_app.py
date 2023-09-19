@@ -85,7 +85,7 @@ TEST_DATA_DIR = join(THIS_DIR, 'data')
 
 
 def pytest_generate_tests(metafunc):
-    obs_id_list = glob.glob(f'{TEST_DATA_DIR}/dr2/*.fits.header')
+    obs_id_list = glob.glob(f'{TEST_DATA_DIR}/**/*.fits.header')
     metafunc.parametrize('test_name', obs_id_list)
 
 

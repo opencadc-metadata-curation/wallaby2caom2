@@ -74,7 +74,7 @@ from caom2pipe import manage_composable as mc
 __all__ = ['WallabyName']
 
 CIRADA_SCHEME = 'cirada'
-COLLECTION_PATTERN = '*'  # TODO what are acceptable naming patterns?
+COLLECTION_PATTERN = '*'
 
 
 class WallabyName(mc.StorageName):
@@ -103,7 +103,7 @@ class WallabyName(mc.StorageName):
         if '.rms.' in self._file_name:
             return ProductType.NOISE
         elif self._file_name.endswith('.png'):
-            return ProductType.THUMBNAIL
+            return ProductType.PREVIEW
         elif (
             self._file_name.endswith('.txt')
             or 'ModelGeometry' in self._file_name
@@ -119,50 +119,40 @@ class WallabyName(mc.StorageName):
         return f'{bits[0]}.{bits[1]}'
 
     def is_dr2(self):
-        return self._file_name == self._product_id
+        return '_High-Res_' in self._file_id
 
     @property
     def prev(self):
-        return f'{self._file_id}_prev.jpg'
-
-    @property
-    def prev_uri(self):
-        return self._get_uri(self.prev, CIRADA_SCHEME)
+        if '.png' in self._file_name:
+            return self._file_name
+        else:
+            return ''
 
     @property
     def thumb(self):
-        return f'{self._file_id}_prev_256.jpg'
-
-    @property
-    def thumb_uri(self):
-        return self._get_uri(self.thumb, CIRADA_SCHEME)
+        return f'{self._file_id}_prev_256.png'
 
     @property
     def version(self):
         return self._version
+
+    def set_file_id(self):
+        if self._file_name is not None:
+            self._file_id = WallabyName.remove_extensions(self._file_name)
 
     def set_obs_id(self, **kwargs):        
         bits = self._file_id.split('_')
         self._obs_id = f'{bits[0]}_{bits[1]}'
 
     def set_product_id(self, **kwargs):
-        if 'SoFiA' in self._file_id or 'High-Res' in self._file_id:
-            result = self._file_id 
-        else:
-            ans = self._file_id.split("_")
-            if "Kin" in ans:
-                ans.remove("Kin")
-            fans = "_".join(ans[2:-1])    
-                        
-            result = 'kinematic_model'+"_"+fans
-            if (
-                '_cube' in self._file_id
-                or '_mom' in self._file_id
-                or '_chan' in self._file_id
-                or '_mask' in self._file_id
-                or '_spec' in self._file_id
-            ):
-                result = 'source_data'+"_"+fans
+        target_name = self._file_id.replace(
+            self._obs_id, ''
+        ).replace('_High-Res_', '_').replace('_Kin_', '_').rsplit('_', 1)[0]
+        if '_High-Res_' in self._file_id:
+            target_name = f'_highres{target_name}'
+        result = f'source_data{target_name}'
+        if '_Kin_' in self._file_id:
+            result = f'kinematic_model{target_name}'
         self._product_id = result
        
     @staticmethod
@@ -172,4 +162,4 @@ class WallabyName(mc.StorageName):
 
     @staticmethod
     def remove_extensions(file_name):
-        return file_name.replace('.fits', '').replace('.header', '')
+        return file_name.replace('.fits', '').replace('.header', '').replace('.png', '')

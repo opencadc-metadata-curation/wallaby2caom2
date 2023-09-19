@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ***********************************************************************
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
@@ -143,12 +142,12 @@ def test_run_use_local_files(
         assert test_result is not None, 'expect result'
         assert test_result == 0, 'expect success'
         assert meta_visit_mock.called, '_visit_meta call'
-        # 14 == number of test files
-        assert meta_visit_mock.call_count == 14, '_visit_meta call count'
+        # 16 == number of test files
+        assert meta_visit_mock.call_count == 16, '_visit_meta call count'
         assert caom2_read_mock.called, '_caom2_store call'
-        assert caom2_read_mock.call_count == 14, '_caom2_store call count'
+        assert caom2_read_mock.call_count == 16, '_caom2_store call count'
         assert caom2_store_mock.called, '_caom2_store call'
-        assert caom2_store_mock.call_count == 14, '_caom2_store call count'
+        assert caom2_store_mock.call_count == 16, '_caom2_store call count'
     finally:
         os.chdir(cwd)
 
@@ -182,13 +181,8 @@ def test_run_use_local_files_false(
         temp = os.path.basename(fqn)
         return ac.make_headers_from_file(f'{test_data_dir}/dr1/{temp}.header')
     headers_mock.side_effect = _make_headers
-    f_name1 = (
-        'vos:goliaths/test/'
-        'WALLABY_J100342-270138_cube_Vel.fits.single_gfit.0.e.fits'
-    )
-    f_name2 = (
-        'vos:goliaths/test/WALLABY_J101035-254920_AverageModelCube_v3.fits'
-    )
+    f_name1 = 'vos:goliaths/test/WALLABY_J103250-301601_Hydra_TR1_spec.fits'
+    f_name2 = 'vos:goliaths/test/WALLABY_J103939-280552_Hydra_TR2_spec.fits'
     f_uri1 = f'{test_config.scheme}:{test_config.collection}/{os.path.basename(f_name1)}'
     f_uri2 = f'{test_config.scheme}:{test_config.collection}/{os.path.basename(f_name2)}'
     temp_queue = deque()
@@ -230,3 +224,43 @@ def test_run_use_local_files_false(
         headers_mock.assert_has_calls(info_calls), 'headers calls'
     finally:
         os.chdir(cwd)
+
+
+@patch('wallaby2caom2.composable.Client', autospec=True)
+@patch('caom2pipe.client_composable.ClientCollection', autospec=True)
+@patch('caom2pipe.execute_composable.OrganizeExecutes.do_one', autospec=True)
+def test_run_remote(run_mock, clients_mock, vo_client_mock, test_config, tmp_path):
+    test_obs_id = 'WALLABY_J124915+043926'
+    test_f_name = 'WALLABY_J124915+043926_NGC_4808_High-Res_Kin_TR1_ModCube.fits'
+
+    node1 = type('', (), {})()
+    node1.props = {
+        'date': '2020-09-15 19:55:03.067000+00:00',
+        'size': 14,
+    }
+    node1.uri = f'vos://cadc.nrc.ca!vault/goliaths/moc/{test_f_name}'
+    node1.type = 'vos:DataNode'
+    node1.node_list = [node1]
+    vo_client_mock.return_value.get_node.return_value = node1
+
+    orig_dir = os.getcwd()
+    test_config.data_sources = ['vos:goliaths/moc']
+    test_config.change_working_directory(tmp_path)
+    test_config.proxy_file_name = 'cadcproxy.pem'
+    try:
+        os.chdir(tmp_path)
+        mc.Config.write_to_file(test_config)
+        with open(test_config.proxy_fqn, 'w') as f:
+            f.write('test content')
+
+        # execution
+        composable._run_remote()
+        assert run_mock.called, 'should have been called'
+        args, kwargs = run_mock.call_args
+        test_storage = args[1]
+        assert isinstance(test_storage, storage_name.WallabyName), type(test_storage)
+        assert test_storage.obs_id == test_obs_id, 'wrong obs id'
+        assert test_storage.file_name == test_f_name, 'wrong file name'
+    finally:
+        os.chdir(orig_dir)
+    assert False

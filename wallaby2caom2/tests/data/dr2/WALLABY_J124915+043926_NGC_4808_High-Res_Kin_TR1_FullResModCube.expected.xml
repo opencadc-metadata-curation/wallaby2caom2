@@ -2,7 +2,7 @@
 <caom2:Observation xmlns:caom2="http://www.opencadc.org/caom2/xml/v2.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="caom2:SimpleObservation" caom2:id="551731a4-dd26-45da-89c8-4f2b93561435">
   <caom2:collection>WALLABY</caom2:collection>
   <caom2:observationID>WALLABY_J124915+043926</caom2:observationID>
-  <caom2:metaRelease>2023-01-01T00:00:00.000</caom2:metaRelease>
+  <caom2:metaRelease>2025-01-01T00:00:00.000</caom2:metaRelease>
   <caom2:algorithm>
     <caom2:name>exposure</caom2:name>
   </caom2:algorithm>
@@ -15,15 +15,16 @@
   </caom2:proposal>
   <caom2:target>
     <caom2:name>WALLABY J124915+043926</caom2:name>
+    <caom2:type>field</caom2:type>
   </caom2:target>
   <caom2:instrument>
     <caom2:name>ASKAP</caom2:name>
   </caom2:instrument>
   <caom2:planes>
     <caom2:plane caom2:id="ec794da0-d133-4875-8ac1-ed3c23506253">
-      <caom2:productID>WALLABY_J124915+043926_NGC_4808_High-Res_Kin_TR1_FullResModCube</caom2:productID>
-      <caom2:metaRelease>2023-01-01T00:00:00.000</caom2:metaRelease>
-      <caom2:dataRelease>2023-01-01T00:00:00.000</caom2:dataRelease>
+      <caom2:productID>kinematic_model_highres_NGC_4808_TR1</caom2:productID>
+      <caom2:metaRelease>2025-01-01T00:00:00.000</caom2:metaRelease>
+      <caom2:dataRelease>2025-01-01T00:00:00.000</caom2:dataRelease>
       <caom2:dataProductType>cube</caom2:dataProductType>
       <caom2:calibrationLevel>3</caom2:calibrationLevel>
       <caom2:provenance>
