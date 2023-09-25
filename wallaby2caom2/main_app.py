@@ -181,10 +181,8 @@ class Telescope(TelescopeMapping):
                     and chunk.time is None
                     and chunk.polarization is None
                     and chunk.naxis is not None
-                    and '_spec' in self._storage_name.file_name
                 ):
-                    # _spec files have a second BINTABLE HDU,
-                    # with no WCS captured in C* keywords
+                    # some files have a second BINTABLE HDU with no WCS captured in C* keywords
                     delete_these_parts.append(part.name)
                 
                 if (
