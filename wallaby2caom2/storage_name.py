@@ -115,8 +115,7 @@ class WallabyName(mc.StorageName):
             return ProductType.SCIENCE
 
     def get_proposal_id(self):
-        bits = self._file_name.split('.')
-        return f'{bits[0]}.{bits[1]}'
+        return self._obs_id
 
     def is_dr2(self):
         return '_High-Res_' in self._file_id

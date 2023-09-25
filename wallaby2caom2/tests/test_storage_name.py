@@ -98,7 +98,7 @@ def test_storage_name(test_config):
             assert (
                 ts.file_uri == f'{test_config.scheme}:{test_config.collection}/{basename(test_url)}'
             ), 'wrong uri'
-            assert ts.prev is None, 'wrong preview'
+            assert ts.prev == '', 'wrong preview'
             assert ts.thumb == f'{expected_fid}_prev_256.png', 'wrong thumbnail'
             assert (
                 ts.prev_uri == f'{test_config.preview_scheme}:{test_config.collection}/{ts.prev}'
