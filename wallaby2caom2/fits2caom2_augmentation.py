@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ***********************************************************************
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
@@ -90,7 +89,7 @@ class Wallaby2Caom2Visitor(Fits2caom2Visitor):
         self._logger.debug(f'Created {parser.__class__.__name__} parser for {self._storage_name.file_name}')
         return parser
 
-    def _get_mapping(self, headers):
+    def _get_mapping(self, headers, _):
         if self._storage_name.is_dr2():
             self._telescope = DR2(
                 self._storage_name, headers, self._clients, self._observable, self._observation, self._config

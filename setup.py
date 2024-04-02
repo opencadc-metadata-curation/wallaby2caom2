@@ -4,15 +4,12 @@
 import glob
 import os
 import sys
-import imp
 from setuptools.command.test import test as TestCommand
 from setuptools import find_packages
 
 from setuptools import setup
 
-import distutils.cmd
 import distutils.log
-import subprocess
 
 # read the README.md file and return as string.
 def readme():
@@ -41,7 +38,7 @@ VERSION = metadata.get('version', 'none')
 
 # generate the version file
 with open(os.path.join(PACKAGENAME, 'version.py'), 'w') as f:
-    f.write('version = \'{}\'\n'.format(VERSION))	
+    f.write('version = \'{}\'\n'.format(VERSION))
 
 # Treat everything in scripts except README.md as a script to be installed
 scripts = [fname for fname in glob.glob(os.path.join('scripts', '*'))
@@ -71,7 +68,7 @@ class PyTest(TestCommand):
         import pytest
         err_no = pytest.main(self.pytest_args)
         sys.exit(err_no)
-        
+
 # Note that requires and provides should not be included in the call to
 # ``setup``, since these are now deprecated. See this link for more details:
 # https://groups.google.com/forum/#!topic/astropy-dev/urYO8ckB2uM
@@ -90,7 +87,7 @@ setup(name=PACKAGENAME,
       use_2to3=False,
       setup_requires=[],
       entry_points=entry_points,
-      python_requires='>=3.11.*',
+      python_requires='>=3.12',
       packages=find_packages(),
       package_data={PACKAGENAME: ['data/*']},
       data_files=[('.config', ['config/config.yml', 'config/state.yml'])],
@@ -98,7 +95,7 @@ setup(name=PACKAGENAME,
         'Natural Language :: English',
         'License :: OSI Approved :: GNU Affero General Public License v3',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.11'
+        'Programming Language :: Python :: 3.12'
       ],
       cmdclass = {
           'coverage': PyTest,
