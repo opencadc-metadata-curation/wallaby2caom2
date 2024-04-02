@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ***********************************************************************
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
@@ -76,10 +75,9 @@ from caom2 import ProductType, TypedOrderedDict, Part
 from caom2pipe import astro_composable as ac
 from caom2pipe.caom_composable import TelescopeMapping
 from caom2pipe import manage_composable as mc
-from wallaby2caom2 import storage_name as sn
 
 
-__all__ = ['Telescope']
+__all__ = ['DR2', 'Telescope']
 
 
 class WallabyValueRepair(mc.ValueRepairCache):
@@ -101,10 +99,10 @@ class Telescope(TelescopeMapping):
 
     value_repair = WallabyValueRepair()
 
-    def __init__(self, storage_name, headers):
-        super().__init__(storage_name, headers)
+    def __init__(self, storage_name, headers, clients, observable, observation, config):
+        super().__init__(storage_name, headers, clients, observable, observation, config)
 
-    def accumulate_blueprint(self, bp, application=None):
+    def accumulate_blueprint(self, bp):
         """Configure the VLASS-specific ObsBlueprint for the CAOM model
         SpatialWCS."""
         self._logger.debug('Begin accumulate_wcs.')
@@ -114,51 +112,34 @@ class Telescope(TelescopeMapping):
             bp.configure_energy_axis(3)
             bp.configure_polarization_axis(4)
 
-        super().accumulate_blueprint(bp, sn.APPLICATION)
+        super().accumulate_blueprint(bp)
 
         # observation level
         bp.set('Observation.type', 'OBJECT')
 
         # over-ride use of value from default keyword 'DATE'
-        bp.set('Observation.metaRelease', '2023-01-01')
-        #bp.clear('Observation.metaRelease')
-        #bp.add_attribute('Observation.metaRelease', 'DATE-OBS')
-
-        #bp.clear('Observation.target.name')
-        #bp.add_attribute('Observation.target.name', 'FILNAM04')
-        #bp.set('Observation.target.type', 'field')
-
-        # Clare Chandler via JJK - 21-08-18
+        bp.set('Observation.metaRelease', '2026-01-01')
         bp.set('Observation.instrument.name', 'ASKAP')
-        # From JJK - 27-08-18 - slack
         bp.set('Observation.proposal.title', 'WALLABY')
         bp.set('Observation.proposal.project', 'WALLABY')
-        bp.set('Observation.proposal.id', 'get_proposal_id(uri)')
+        bp.set('Observation.proposal.id', 'get_proposal_id()')
 
         # plane level
         bp.set('Plane.calibrationLevel', '2')
-        bp.set('Plane.dataProductType', 'cube')
+        bp.set('Plane.dataProductType', self._storage_name.get_data_product_type())
 
-        # Clare Chandler via slack - 28-08-18
         bp.clear('Plane.provenance.name')
         bp.add_attribute('Plane.provenance.name', 'ORIGIN')
         bp.set('Plane.provenance.producer', 'CSIRO')
-        # From JJK - 27-08-18 - slack
         bp.set('Plane.provenance.project', 'WALLABY')
-        #bp.clear('Plane.provenance.runID')
-        #bp.add_attribute('Plane.provenance.runID', 'FILNAM08')
-        #bp.clear('Plane.provenance.lastExecuted')
-        #bp.add_attribute('Plane.provenance.lastExecuted', 'DATE')
-
-        # VLASS data is public, says Eric Rosolowsky via JJK May 30/18
         bp.clear('Plane.metaRelease')
-        bp.set('Plane.metaRelease', '2023-01-01')
+        bp.set('Plane.metaRelease', '2026-01-01')
         bp.clear('Plane.dataRelease')
-        bp.set('Plane.dataRelease', '2023-01-01')
+        bp.set('Plane.dataRelease', '2026-01-01')
 
         # artifact level
         bp.clear('Artifact.productType')
-        bp.set('Artifact.productType', 'get_product_type(uri)')
+        bp.set('Artifact.productType', 'get_product_type()')
         bp.set('Artifact.releaseType', 'data')
 
         # chunk level
@@ -170,7 +151,6 @@ class Telescope(TelescopeMapping):
             bp.set('Chunk.position.axis.function.cd21', 0.0)
             bp.add_attribute('Chunk.position.axis.function.cd22', 'CDELT2')
 
-        # Clare Chandler via JJK - 21-08-18
         bp.set('Chunk.energy.bandpassName', 'L-band')
         bp.add_attribute('Chunk.energy.restfrq', 'RESTFREQ')
         self._logger.debug('End accumulate_wcs')
@@ -190,8 +170,9 @@ class Telescope(TelescopeMapping):
         if '.rms.' in self._storage_name.file_uri:
             return ProductType.NOISE
         elif self._storage_name.file_uri.endswith('.png'):
-            return ProductType.THUMBNAIL
+            return ProductType.PREVIEW
         elif (
+
             self._storage_name.file_uri.endswith('.txt')
             or 'ModelGeometry' in self._storage_name.file_uri
             or 'ModelRotationCurve' in self._storage_name.file_uri
@@ -203,8 +184,8 @@ class Telescope(TelescopeMapping):
 
     def get_proposal_id(self, ext):
         caom_name = mc.CaomName(self._storage_name.file_uri)
-        bits = caom_name.file_name.split('.')
-        return f'{bits[0]}.{bits[1]}'
+        bits = caom_name.file_name.split('_')
+        return f'{bits[0]}_{bits[1]}'
 
     def get_time_refcoord_value(self, ext):
         dateobs = self._headers[ext].get('DATE-OBS')
@@ -215,7 +196,7 @@ class Telescope(TelescopeMapping):
             else:
                 return None
 
-    def _update_artifact(self, artifact, clients=None):
+    def _update_artifact(self, artifact):
         self._logger.debug(f'Begin _update_artifact for {artifact.uri}')
         if '.txt' in artifact.uri:
             return
@@ -257,27 +238,43 @@ class Telescope(TelescopeMapping):
             )
         self._logger.debug('Done update.')
 
-    def update(self, observation, file_info, clients=None):
+    def update(self, file_info):
         """
         Update the Artifact file-based metadata. Override if it's necessary
         to carry out more/different updates.
 
-        :param observation: Observation instance
         :param file_info: FileInfo instance
-        :param clients: ClientCollection instance
         :return:
         """
-        self._logger.debug(f'Begin update for {observation.observation_id}.')
+        self._logger.debug(f'Begin update for {self._observation.observation_id}.')
         try:
-            super().update(observation, file_info, clients)
-            Telescope.value_repair.repair(observation)
+            super().update(file_info)
+            Telescope.value_repair.repair(self._observation)
             self._logger.debug('Done update.')
-            return observation
+            return self._observation
         except mc.CadcException as e:
             tb = traceback.format_exc()
             self._logger.debug(tb)
             self._logger.error(e)
             self._logger.error(
-                f'Terminating ingestion for {observation.observation_id}'
+                f'Terminating ingestion for {self._observation.observation_id}'
             )
             return None
+
+
+class DR2(Telescope):
+
+    def __init__(self, storage_name, headers, clients, observable, observation, config):
+        super().__init__(storage_name, headers, clients, observable, observation, config)
+
+    def accumulate_blueprint(self, bp):
+        super().accumulate_blueprint(bp)
+        bp.set('Observation.metaRelease', '2026-01-01')
+        bp.set('Plane.metaRelease', '2026-01-01')
+        bp.set('Plane.dataRelease', '2026-01-01')
+
+        bp.clear('Observation.target.name')
+        bp.add_attribute('Observation.target.name', 'OBJECT')
+        bp.set('Observation.target.type', 'field')
+
+        self._logger.debug('End accumulate_wcs')

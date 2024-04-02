@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ***********************************************************************
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
@@ -72,33 +71,45 @@ from os.path import basename
 from wallaby2caom2 import storage_name as sn
 
 
-def test_storage_name():
-    test_f_name = 'WALLABY_J100342-270137_AverageModelCube_v2.fits'
-    test_url = (
-        f'vos:cirada/emission/PilotFieldReleases_Jun2021/'
-        f'KinematicModels/Wallaby_Hydra_DR2_KinematicModels_v2/'
-        f'WALLABY_J100342-270137/{test_f_name}'
-    )
-    expected_obs_id = 'WALLABY_J100342-270137'
-    expected_fid = basename(test_url).replace('.fits', '')
-    for ii in [test_url, test_f_name]:
-        ts = sn.WallabyName(ii)
-        assert ts.obs_id == expected_obs_id, 'wrong obs id'
-        assert ts.file_name == basename(test_url), 'wrong fname'
-        assert ts.file_id == expected_fid, 'wrong fid'
-        assert (
-            ts.file_uri == f'{sn.SCHEME}:{sn.COLLECTION}/{basename(test_url)}'
-        ), 'wrong uri'
-        assert ts.model_file_name == f'{expected_obs_id}.xml', 'wrong model'
-        assert ts.log_file == f'{expected_obs_id}.log', 'wrong log file'
-        assert ts.prev == f'{expected_fid}_prev.jpg', 'wrong preview'
-        assert (
-            ts.thumb == f'{expected_fid}_prev_256.jpg'
-        ), 'wrong thumbnail'
-        assert (
-            ts.prev_uri == f'{sn.CIRADA_SCHEME}:{sn.COLLECTION}/{ts.prev}'
-        ), 'wrong preview uri'
-        assert (
-            ts.thumb_uri == f'{sn.CIRADA_SCHEME}:{sn.COLLECTION}/{ts.thumb}'
-        ), 'wrong thumbnail uri'
-        assert len(ts.source_names) == 1, 'wrong length'
+def test_storage_name(test_config):
+    target_name = 'NGC_4808_TR1'
+    test_f_names = {
+        'WALLABY_J124915+043926_NGC_4808_High-Res_Kin_TR1_FullResProcData.fits':
+            'WALLABY_J124915+043926_NGC_4808_High-Res_Kin_TR1_FullResProcData',
+        'WALLABY_J124915+043926_NGC_4808_High-Res_TR1_spec.fits':
+            'WALLABY_J124915+043926_NGC_4808_High-Res_TR1_spec',
+        'WALLABY_J124915+043926_NGC_4808_Kin_TR1_FullResProcData.fits': 'kinematic_model_NGC_4808_TR1',
+        'WALLABY_J124915+043926_NGC_4808_TR1_spec.fits': 'source_data_NGC_4808_TR1',
+    }
+    for test_f_name, expected_product_id in test_f_names.items():
+        test_url = (
+            f'vos:cirada/emission/PilotFieldReleases_Jun2021/'
+            f'KinematicModels/Wallaby_Hydra_DR2_KinematicModels_v2/'
+            f'WALLABY_J100342-270137/{test_f_name}'
+        )
+        expected_obs_id = 'WALLABY_J124915+043926'
+        expected_fid = basename(test_url).replace('.fits', '')
+        for ii in [test_url, test_f_name]:
+            ts = sn.WallabyName(ii)
+            assert ts.obs_id == expected_obs_id, 'wrong obs id'
+            assert ts.product_id == expected_product_id, f'wrong product id {ts.product_id} {test_f_name}'
+            assert ts.file_name == basename(test_url), 'wrong fname'
+            assert ts.file_id == expected_fid, 'wrong fid'
+            assert (
+                ts.file_uri == f'{test_config.scheme}:{test_config.collection}/{basename(test_url)}'
+            ), 'wrong uri'
+            assert ts.prev == '', 'wrong preview'
+            assert ts.thumb == f'{expected_fid}_prev_256.png', 'wrong thumbnail'
+            assert (
+                ts.prev_uri == f'{test_config.preview_scheme}:{test_config.collection}/{ts.prev}'
+            ), 'wrong preview uri'
+            assert (
+                ts.thumb_uri == f'{test_config.preview_scheme}:{test_config.collection}/{ts.thumb}'
+            ), 'wrong thumbnail uri'
+            assert len(ts.source_names) == 1, 'wrong length'
+
+
+def test_preview(test_config):
+    test_f_name = 'WALLABY_J124915+043926_NGC_4808_High-Res_Kin_TR1_DiagnosticPlot.png'
+    ts = sn.WallabyName(test_f_name)
+    assert ts.thumb == test_f_name.replace('.png', '') + '_prev_256.png'

@@ -67,43 +67,69 @@
 # ***********************************************************************
 #
 
-import logging
+from os import unlink
+from os.path import dirname, exists, join, realpath
 
-from caom2 import Observation, Requirements, Status
+from cadcdata import FileInfo
+from caom2pipe import astro_composable as ac
 from caom2pipe import manage_composable as mc
-from wallaby2caom2 import metadata
+from caom2pipe import reader_composable as rdc
+from wallaby2caom2 import storage_name, fits2caom2_augmentation
+from caom2.diff import get_differences
 
-START_DATE = '2019-01-01'
+import glob
 
 
-def visit(observation, **kwargs):
-    mc.check_param(observation, Observation)
+THIS_DIR = dirname(realpath(__file__))
+TEST_DATA_DIR = join(THIS_DIR, 'data')
 
-    # conversation with JJK, PD 2018-08-27 - use the observation-level
-    # data quality flag.
-    #
-    # There's no header information, so get the list of QA rejected files
-    # from URLs that look like this:
-    #
-    # https://archive-new.nrao.edu/vlass/quicklook/VLASS*/QA_REJECTED/#
-    #
-    # and compare against that list. The list gets items added/removed over
-    # time.
 
-    count = 0
-    original = observation.requirements
-    if metadata.cache.is_qa_rejected(observation.observation_id):
-        observation.requirements = Requirements(Status.FAIL)
+def pytest_generate_tests(metafunc):
+    obs_id_list = glob.glob(f'{TEST_DATA_DIR}/**/*.fits.header')
+    metafunc.parametrize('test_name', obs_id_list)
+
+
+def test_visitor(test_config, test_name):
+    wallaby_name = storage_name.WallabyName(
+        test_name.replace('.header', ''),
+    )
+    file_info = FileInfo(
+        id=wallaby_name.file_uri, file_type='application/fits'
+    )
+    headers = ac.make_headers_from_file(test_name)
+    metadata_reader = rdc.FileMetadataReader()
+    metadata_reader._headers = {wallaby_name.file_uri: headers}
+    metadata_reader._file_info = {wallaby_name.file_uri: file_info}
+    kwargs = {
+        'storage_name': wallaby_name,
+        'metadata_reader': metadata_reader,
+        'config': test_config,
+    }
+    observation = None
+    input_file = f'{dirname(test_name)}/in.{wallaby_name.product_id}.fits.xml'
+    if exists(input_file):
+        observation = mc.read_obs_from_file(input_file)
+    expected_fqn = f'{dirname(test_name)}/{wallaby_name.file_id}.expected.xml'
+    actual_fqn = expected_fqn.replace('expected', 'actual')
+    if exists(actual_fqn):
+        unlink(actual_fqn)
+
+    observation = fits2caom2_augmentation.visit(observation, **kwargs)
+
+    if observation is None:
+        assert False, f'No Observation for {test_name}'
     else:
-        observation.requirements = None
-    if observation.requirements != original:
-        logging.warning(f'Changed requirements to {observation.requirements} '
-                        f'for {observation.observation_id}.')
-        count = 1
-    logging.info(
-        f'Completed quality augmentation for {observation.observation_id}')
-    return {'observations': count}
-
-
-def _set_failed(observation):
-    observation.requirements = Requirements(Status.FAIL)
+        if exists(expected_fqn):
+            expected = mc.read_obs_from_file(expected_fqn)
+            compare_result = get_differences(expected, observation)
+            if compare_result is not None:
+                mc.write_obs_to_file(observation, actual_fqn)
+                compare_text = '\n'.join([r for r in compare_result])
+                msg = (
+                    f'Differences found in observation {expected.observation_id}\n'
+                    f'{compare_text}'
+                )
+                raise AssertionError(msg)
+        else:
+            mc.write_obs_to_file(observation, actual_fqn)
+            assert False, f'No expected file {expected_fqn} for {test_name}'

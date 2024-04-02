@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 # ***********************************************************************
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 #
-#  (c) 2018.                            (c) 2018.
+#  (c) 2023.                            (c) 2023.
 #  Government of Canada                 Gouvernement du Canada
 #  National Research Council            Conseil national de recherches
 #  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -67,62 +66,30 @@
 # ***********************************************************************
 #
 
-from os.path import dirname, exists, join, realpath
+from os.path import dirname, join, realpath
+from caom2pipe.manage_composable import Config, StorageName
+import pytest
 
-from cadcdata import FileInfo
-from caom2pipe import astro_composable as ac
-from caom2pipe import manage_composable as mc
-from caom2pipe import reader_composable as rdc
-from wallaby2caom2 import storage_name, fits2caom2_augmentation
-from caom2.diff import get_differences
-
-import glob
+COLLECTION = 'WALLABY'
+SCHEME = 'cadc'
+PREVIEW_SCHEME = 'cirada'
 
 
-TEST_URI = 'ad:TEST_COLLECTION/test_file.fits'
+@pytest.fixture()
+def test_config():
+    config = Config()
+    config.collection = COLLECTION
+    config.preview_scheme = PREVIEW_SCHEME
+    config.scheme = SCHEME
+    config.logging_level = 'INFO'
+    StorageName.collection = config.collection
+    StorageName.preview_scheme = config.preview_scheme
+    StorageName.scheme = config.scheme
+    return config
 
-THIS_DIR = dirname(realpath(__file__))
-TEST_DATA_DIR = join(THIS_DIR, 'data')
-PLUGIN = join(dirname(THIS_DIR), 'main_app.py')
 
-
-def pytest_generate_tests(metafunc):
-    obs_id_list = glob.glob(f'{TEST_DATA_DIR}/*.fits.header')
-    metafunc.parametrize('test_name', obs_id_list)
-
-
-def test_visitor(test_name):
-    wallaby_name = storage_name.WallabyName(
-        test_name.replace('.header', ''),
-    )
-    file_info = FileInfo(
-        id=wallaby_name.file_uri, file_type='application/fits'
-    )
-    headers = ac.make_headers_from_file(test_name)
-    metadata_reader = rdc.FileMetadataReader()
-    metadata_reader._headers = {wallaby_name.file_uri: headers}
-    metadata_reader._file_info = {wallaby_name.file_uri: file_info}
-    kwargs = {
-        'storage_name': wallaby_name,
-        'metadata_reader': metadata_reader,
-    }
-    observation = None
-    input_file = f'{TEST_DATA_DIR}/in.{wallaby_name.product_id}.fits.xml'
-    if exists(input_file):
-        observation = mc.read_obs_from_file(input_file)
-    observation = fits2caom2_augmentation.visit(observation, **kwargs)
-
-    expected_fqn = (
-        f'{TEST_DATA_DIR}/{wallaby_name.obs_id}.expected.xml'
-    )
-    expected = mc.read_obs_from_file(expected_fqn)
-    compare_result = get_differences(expected, observation)
-    if compare_result is not None:
-        actual_fqn = expected_fqn.replace('expected', 'actual')
-        mc.write_obs_to_file(observation, actual_fqn)
-        compare_text = '\n'.join([r for r in compare_result])
-        msg = (
-            f'Differences found in observation {expected.observation_id}\n'
-            f'{compare_text}'
-        )
-        raise AssertionError(msg)
+@pytest.fixture()
+def test_data_dir():
+    this_dir = dirname(realpath(__file__))
+    fqn = join(this_dir, 'data')
+    return fqn

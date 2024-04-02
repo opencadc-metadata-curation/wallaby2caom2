@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ***********************************************************************
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
@@ -70,7 +69,7 @@
 from caom2 import ProductType
 from caom2utils import BlueprintParser, FitsParser
 from caom2pipe.caom_composable import Fits2caom2Visitor
-from wallaby2caom2.main_app import Telescope
+from wallaby2caom2.main_app import DR2, Telescope
 
 
 class Wallaby2Caom2Visitor(Fits2caom2Visitor):
@@ -82,15 +81,23 @@ class Wallaby2Caom2Visitor(Fits2caom2Visitor):
     def _get_parser(self, headers, blueprint, uri):
         if (
             len(headers) == 0
-            or self._telescope.get_product_type(0) != ProductType.SCIENCE
+            or self._storage_name.get_product_type() != ProductType.SCIENCE
         ):
             parser = BlueprintParser(blueprint, uri)
         else:
             parser = FitsParser(headers, blueprint, uri)
+        self._logger.debug(f'Created {parser.__class__.__name__} parser for {self._storage_name.file_name}')
         return parser
 
-    def _get_mapping(self, headers):
-        self._telescope = Telescope(self._storage_name, headers)
+    def _get_mapping(self, headers, _):
+        if self._storage_name.is_dr2():
+            self._telescope = DR2(
+                self._storage_name, headers, self._clients, self._observable, self._observation, self._config
+            )
+        else:
+            self._telescope = Telescope(
+                self._storage_name, headers, self._clients, self._observable, self._observation, self._config
+            )
         return self._telescope
 
 

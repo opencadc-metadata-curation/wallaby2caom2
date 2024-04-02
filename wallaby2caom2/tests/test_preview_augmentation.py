@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ***********************************************************************
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
@@ -74,14 +73,13 @@ from wallaby2caom2 import preview_augmentation
 from wallaby2caom2 import storage_name as sn
 
 from mock import patch
-from test_main_app import TEST_DATA_DIR
 
 
 @pytest.mark.skip('')
 @patch('cadcutils.net.ws.WsCapabilities.get_access_url')
-def test_preview_augmentation(access_mock):
+def test_preview_augmentation(access_mock, test_data_dir):
     access_mock.return_value = 'https://localhost'
-    test_fqn = f'{TEST_DATA_DIR}/preview_augmentation_start.xml'
+    test_fqn = f'{test_data_dir}/preview_augmentation_start.xml'
     test_science_f_name = (
         'VLASS1.1.ql.T01t01.J000228-363000.10.2048.v1.I.iter1.image.pbcor.'
         'tt0.subim.fits'
@@ -89,7 +87,7 @@ def test_preview_augmentation(access_mock):
     test_storage_name = sn.WallabyName(test_science_f_name)
     test_obs = mc.read_obs_from_file(test_fqn)
     test_config = mc.Config()
-    test_rejected = mc.Rejected(f'{TEST_DATA_DIR}/rejected.yml')
+    test_rejected = mc.Rejected(f'{test_data_dir}/rejected.yml')
     test_metrics = mc.Metrics(test_config)
     test_observable = mc.Observable(test_rejected, test_metrics)
     kwargs = {'stream': None,

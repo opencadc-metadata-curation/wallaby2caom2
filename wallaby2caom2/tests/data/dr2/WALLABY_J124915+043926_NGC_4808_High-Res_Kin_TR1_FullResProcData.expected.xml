@@ -1,48 +1,48 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<caom2:Observation xmlns:caom2="http://www.opencadc.org/caom2/xml/v2.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="caom2:SimpleObservation" caom2:id="c76d68b0-a2fa-4548-a461-b2de130a5f70" caom2:metaProducer="wallaby2caom2/0.1.0">
+<caom2:Observation xmlns:caom2="http://www.opencadc.org/caom2/xml/v2.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="caom2:SimpleObservation" caom2:id="0326c5c8-7436-4b01-a0f4-d8124909b380">
   <caom2:collection>WALLABY</caom2:collection>
-  <caom2:observationID>WALLABY_J100342-270137</caom2:observationID>
-  <caom2:metaRelease>2023-01-01T00:00:00.000</caom2:metaRelease>
+  <caom2:observationID>WALLABY_J124915+043926</caom2:observationID>
+  <caom2:metaRelease>2026-01-01T00:00:00.000</caom2:metaRelease>
   <caom2:algorithm>
     <caom2:name>exposure</caom2:name>
   </caom2:algorithm>
   <caom2:type>OBJECT</caom2:type>
   <caom2:intent>science</caom2:intent>
   <caom2:proposal>
-    <caom2:id>WALLABY_J100342-270137_AverageModelCube_v2.fits</caom2:id>
+    <caom2:id>WALLABY_J124915+043926</caom2:id>
     <caom2:project>WALLABY</caom2:project>
     <caom2:title>WALLABY</caom2:title>
   </caom2:proposal>
   <caom2:target>
-    <caom2:name>TestCube</caom2:name>
+    <caom2:name>WALLABY J124915+043926</caom2:name>
+    <caom2:type>field</caom2:type>
   </caom2:target>
   <caom2:instrument>
     <caom2:name>ASKAP</caom2:name>
   </caom2:instrument>
   <caom2:planes>
-    <caom2:plane caom2:id="c76d68b0-a2fa-4548-a461-b2de130a5f71">
-      <caom2:productID>kinematic_model_AverageModelCube</caom2:productID>
-      <caom2:metaRelease>2023-01-01T00:00:00.000</caom2:metaRelease>
-      <caom2:dataRelease>2023-01-01T00:00:00.000</caom2:dataRelease>
+    <caom2:plane caom2:id="8b816ef5-d176-4884-92e6-9a62210316a4">
+      <caom2:productID>WALLABY_J124915+043926_NGC_4808_High-Res_Kin_TR1_FullResProcData</caom2:productID>
+      <caom2:metaRelease>2026-01-01T00:00:00.000</caom2:metaRelease>
+      <caom2:dataRelease>2026-01-01T00:00:00.000</caom2:dataRelease>
       <caom2:dataProductType>cube</caom2:dataProductType>
       <caom2:calibrationLevel>2</caom2:calibrationLevel>
       <caom2:provenance>
-        <caom2:name>MockCubeGenerator</caom2:name>
+        <caom2:name>SoFiA 2.3.1</caom2:name>
         <caom2:project>WALLABY</caom2:project>
         <caom2:producer>CSIRO</caom2:producer>
       </caom2:provenance>
       <caom2:artifacts>
-        <caom2:artifact caom2:id="c76d68b0-a2fa-4548-a461-b2de130a5f72">
-          <caom2:uri>cadc:WALLABY/WALLABY_J100342-270137_AverageModelCube_v2.fits</caom2:uri>
+        <caom2:artifact caom2:id="f11575b2-a2af-4c11-a772-4b2873241973">
+          <caom2:uri>cadc:WALLABY/WALLABY_J124915+043926_NGC_4808_High-Res_Kin_TR1_FullResProcData.fits</caom2:uri>
           <caom2:productType>science</caom2:productType>
           <caom2:releaseType>data</caom2:releaseType>
           <caom2:contentType>application/fits</caom2:contentType>
-          <caom2:contentChecksum>md5:ae2a33238c5051611133e7090560fd8a</caom2:contentChecksum>
           <caom2:parts>
-            <caom2:part caom2:id="34519a52-3f02-4b2a-9777-55ef9027944b">
+            <caom2:part caom2:id="0b9e4b5d-a6e5-46cb-b6a7-0478c2d1e1b9">
               <caom2:name>0</caom2:name>
               <caom2:chunks>
-                <caom2:chunk caom2:id="f937f2b3-1510-4c3b-b88e-2d0c94475ba7" caom2:metaProducer="wallaby2caom2/0.1.0">
+                <caom2:chunk caom2:id="2e1e7bac-1bfe-4ef6-8001-1a182e4e4bea">
                   <caom2:naxis>3</caom2:naxis>
                   <caom2:positionAxis1>1</caom2:positionAxis1>
                   <caom2:positionAxis2>2</caom2:positionAxis2>
@@ -59,28 +59,28 @@
                       </caom2:axis2>
                       <caom2:function>
                         <caom2:dimension>
-                          <caom2:naxis1>94</caom2:naxis1>
-                          <caom2:naxis2>81</caom2:naxis2>
+                          <caom2:naxis1>98</caom2:naxis1>
+                          <caom2:naxis2>80</caom2:naxis2>
                         </caom2:dimension>
                         <caom2:refCoord>
                           <caom2:coord1>
-                            <caom2:pix>1.0</caom2:pix>
-                            <caom2:val>151.014328</caom2:val>
+                            <caom2:pix>52.0</caom2:pix>
+                            <caom2:val>192.315833333</caom2:val>
                           </caom2:coord1>
                           <caom2:coord2>
-                            <caom2:pix>1.0</caom2:pix>
-                            <caom2:val>-27.0884037</caom2:val>
+                            <caom2:pix>42.0</caom2:pix>
+                            <caom2:val>4.6575</caom2:val>
                           </caom2:coord2>
                         </caom2:refCoord>
-                        <caom2:cd11>-0.00166666671</caom2:cd11>
+                        <caom2:cd11>-0.000555555555556</caom2:cd11>
                         <caom2:cd12>0.0</caom2:cd12>
                         <caom2:cd21>0.0</caom2:cd21>
-                        <caom2:cd22>0.00166666671</caom2:cd22>
+                        <caom2:cd22>0.000555555555556</caom2:cd22>
                       </caom2:function>
                     </caom2:axis>
                     <caom2:coordsys>FK5</caom2:coordsys>
                     <caom2:equinox>2000.0</caom2:equinox>
-                    <caom2:resolution>30.087508700689735</caom2:resolution>
+                    <caom2:resolution>11.998139663480956</caom2:resolution>
                   </caom2:position>
                   <caom2:energy>
                     <caom2:axis>
@@ -89,16 +89,16 @@
                         <caom2:cunit>m/s</caom2:cunit>
                       </caom2:axis>
                       <caom2:function>
-                        <caom2:naxis>28</caom2:naxis>
-                        <caom2:delta>-11800.3955</caom2:delta>
+                        <caom2:naxis>54</caom2:naxis>
+                        <caom2:delta>-3978.503352489322</caom2:delta>
                         <caom2:refCoord>
-                          <caom2:pix>14.0</caom2:pix>
-                          <caom2:val>956375.438</caom2:val>
+                          <caom2:pix>27.0</caom2:pix>
+                          <caom2:val>2673267.370900081</caom2:val>
                         </caom2:refCoord>
                       </caom2:function>
                     </caom2:axis>
                     <caom2:specsys>BARYCENT</caom2:specsys>
-                    <caom2:restfrq>1420405760.0</caom2:restfrq>
+                    <caom2:restfrq>1420405751.79</caom2:restfrq>
                     <caom2:bandpassName>L-band</caom2:bandpassName>
                   </caom2:energy>
                 </caom2:chunk>
