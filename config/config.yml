@@ -81,5 +81,10 @@ data_source_extensions:
 # - modify - create a footprint and previews for an existing CAOM model record
 task_types: 
   - ingest
-features:
-  supports_latest_client: True
+data_read_groups:
+  - ivo://cadc.nrc.ca/gms?CADC
+  - ivo://cadc.nrc.ca/gms?WALLABY-RW
+meta_read_groups:
+  - ivo://cadc.nrc.ca/gms?CADC
+  - ivo://cadc.nrc.ca/gms?WALLABY-RW
+
