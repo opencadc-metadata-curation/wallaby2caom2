@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ***********************************************************************
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
@@ -107,7 +106,7 @@ class Telescope(TelescopeMapping):
         """Configure the VLASS-specific ObsBlueprint for the CAOM model
         SpatialWCS."""
         self._logger.debug('Begin accumulate_wcs.')
-        product_type = self._storage_name.get_product_type()
+        product_type = self.get_product_type(0)
         if product_type == ProductType.SCIENCE:
             bp.configure_position_axes((1, 2))
             bp.configure_energy_axis(3)
@@ -117,27 +116,30 @@ class Telescope(TelescopeMapping):
 
         # observation level
         bp.set('Observation.type', 'OBJECT')
-        bp.set('Observation.metaRelease', '2023-01-01')
+
+        # over-ride use of value from default keyword 'DATE'
+        bp.set('Observation.metaRelease', '2026-01-01')
         bp.set('Observation.instrument.name', 'ASKAP')
         bp.set('Observation.proposal.title', 'WALLABY')
         bp.set('Observation.proposal.project', 'WALLABY')
-        bp.set('Observation.proposal.id', self._storage_name.get_proposal_id())
+        bp.set('Observation.proposal.id', 'get_proposal_id()')
 
         # plane level
-        bp.set('Plane.calibrationLevel', self._storage_name.get_calibration_level())
+        bp.set('Plane.calibrationLevel', '2')
         bp.set('Plane.dataProductType', self._storage_name.get_data_product_type())
 
         bp.clear('Plane.provenance.name')
         bp.add_attribute('Plane.provenance.name', 'ORIGIN')
         bp.set('Plane.provenance.producer', 'CSIRO')
         bp.set('Plane.provenance.project', 'WALLABY')
-
-        bp.set('Plane.metaRelease', '2023-01-01')
-        bp.set('Plane.dataRelease', '2023-01-01')
+        bp.clear('Plane.metaRelease')
+        bp.set('Plane.metaRelease', '2026-01-01')
+        bp.clear('Plane.dataRelease')
+        bp.set('Plane.dataRelease', '2026-01-01')
 
         # artifact level
         bp.clear('Artifact.productType')
-        bp.set('Artifact.productType', self._storage_name.get_product_type())
+        bp.set('Artifact.productType', 'get_product_type()')
         bp.set('Artifact.releaseType', 'data')
 
         # chunk level
@@ -148,7 +150,6 @@ class Telescope(TelescopeMapping):
             bp.set('Chunk.position.axis.function.cd12', 0.0)
             bp.set('Chunk.position.axis.function.cd21', 0.0)
             bp.add_attribute('Chunk.position.axis.function.cd22', 'CDELT2')
-            bp.set('Chunk.position.resolution', 'get_position_resolution()')
 
         bp.set('Chunk.energy.bandpassName', 'L-band')
         bp.add_attribute('Chunk.energy.restfrq', 'RESTFREQ')
@@ -165,6 +166,36 @@ class Telescope(TelescopeMapping):
         else:
             return 0.0
 
+    def get_product_type(self, ext):
+        if '.rms.' in self._storage_name.file_uri:
+            return ProductType.NOISE
+        elif self._storage_name.file_uri.endswith('.png'):
+            return ProductType.PREVIEW
+        elif (
+
+            self._storage_name.file_uri.endswith('.txt')
+            or 'ModelGeometry' in self._storage_name.file_uri
+            or 'ModelRotationCurve' in self._storage_name.file_uri
+            or 'ModelSurfaceDensity' in self._storage_name.file_uri
+        ):
+            return ProductType.AUXILIARY
+        else:
+            return ProductType.SCIENCE
+
+    def get_proposal_id(self, ext):
+        caom_name = mc.CaomName(self._storage_name.file_uri)
+        bits = caom_name.file_name.split('_')
+        return f'{bits[0]}_{bits[1]}'
+
+    def get_time_refcoord_value(self, ext):
+        dateobs = self._headers[ext].get('DATE-OBS')
+        if dateobs is not None:
+            result = ac.get_datetime(dateobs)
+            if result is not None:
+                return result.mjd
+            else:
+                return None
+
     def _update_artifact(self, artifact):
         self._logger.debug(f'Begin _update_artifact for {artifact.uri}')
         if '.txt' in artifact.uri:
@@ -175,6 +206,14 @@ class Telescope(TelescopeMapping):
         delete_these_parts = []
         for part in artifact.parts.values():
             for chunk in part.chunks:
+                if chunk.position is not None:
+                    chunk.position.resolution = self.get_position_resolution(0)
+                if (
+                    chunk.energy is not None
+                    and chunk.energy_axis is None
+                ):
+                    chunk.energy_axis = chunk.naxis
+
                 if (
                     chunk.position is None
                     and chunk.energy is None
@@ -182,20 +221,21 @@ class Telescope(TelescopeMapping):
                     and chunk.polarization is None
                     and chunk.naxis is not None
                 ):
-                    # some files have a second BINTABLE HDU with no WCS captured in C* keywords
+                    # _spec files have a second BINTABLE HDU,
+                    # with no WCS captured in C* keywords
                     delete_these_parts.append(part.name)
-                
-                if (
-                    chunk.energy is not None 
-                    and chunk.naxis is not None 
-                    and chunk.naxis == 3 
-                    and chunk.energy_axis is None
-                ):
-                    chunk.energy_axis = 3
 
-            for entry in delete_these_parts:
-                artifact.parts.popitem(entry)
-                self._logger.info(f'Remove part {entry} with no WCS.')
+        for entry in delete_these_parts:
+            artifact.parts.popitem(entry)
+            self._logger.info(f'Remove part {entry} with no WCS.')
+        if artifact.uri.startswith('vos:cirada'):
+            old_uri = artifact.uri
+            artifact.uri = old_uri.replace(
+                'vos:cirada', 'vos://cadc.nrc.ca~vault/cirada'
+            )
+            self._logger.info(
+                f'Change URI from {old_uri} to {artifact.uri}'
+            )
         self._logger.debug('Done update.')
 
     def update(self, file_info):
@@ -229,9 +269,9 @@ class DR2(Telescope):
 
     def accumulate_blueprint(self, bp):
         super().accumulate_blueprint(bp)
-        bp.set('Observation.metaRelease', '2025-01-01')
-        bp.set('Plane.metaRelease', '2025-01-01')
-        bp.set('Plane.dataRelease', '2025-01-01')
+        bp.set('Observation.metaRelease', '2026-01-01')
+        bp.set('Plane.metaRelease', '2026-01-01')
+        bp.set('Plane.dataRelease', '2026-01-01')
 
         bp.clear('Observation.target.name')
         bp.add_attribute('Observation.target.name', 'OBJECT')

@@ -263,4 +263,3 @@ def test_run_remote(run_mock, clients_mock, vo_client_mock, test_config, tmp_pat
         assert test_storage.file_name == test_f_name, 'wrong file name'
     finally:
         os.chdir(orig_dir)
-    assert False

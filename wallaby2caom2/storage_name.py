@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ***********************************************************************
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
@@ -98,7 +97,7 @@ class WallabyName(mc.StorageName):
         if '_mom' in self._file_name or '_snr' in self._file_name:
             result = 'image'
         return result
-    
+
     def get_product_type(self):
         if '.rms.' in self._file_name:
             return ProductType.NOISE
@@ -139,24 +138,33 @@ class WallabyName(mc.StorageName):
         if self._file_name is not None:
             self._file_id = WallabyName.remove_extensions(self._file_name)
 
-    def set_obs_id(self, **kwargs):        
+    def set_obs_id(self, **kwargs):
         bits = self._file_id.split('_')
         self._obs_id = f'{bits[0]}_{bits[1]}'
 
     def set_product_id(self, **kwargs):
-        target_name = self._file_id.replace(
-            self._obs_id, ''
-        ).replace('_High-Res_', '_').replace('_Kin_', '_').rsplit('_', 1)[0]
-        if '_High-Res_' in self._file_id:
-            target_name = f'_highres{target_name}'
-        result = f'source_data{target_name}'
-        if '_Kin_' in self._file_id:
-            result = f'kinematic_model{target_name}'
+        if 'SoFiA' in self._file_id or 'High-Res' in self._file_id:
+            result = self._file_id
+        else:
+            ans = self._file_id.split("_")
+            if "Kin" in ans:
+                ans.remove("Kin")
+            fans = "_".join(ans[2:-1])
+
+            result = 'kinematic_model'+"_"+fans
+            if (
+                '_cube' in self._file_id
+                or '_mom' in self._file_id
+                or '_chan' in self._file_id
+                or '_mask' in self._file_id
+                or '_spec' in self._file_id
+            ):
+                result = 'source_data'+"_"+fans
         self._product_id = result
-       
+
     @staticmethod
     def get_version(file_name):
-        bits = file_name.split('_')        
+        bits = file_name.split('_')
         return bits[-2]
 
     @staticmethod

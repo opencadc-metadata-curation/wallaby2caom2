@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ***********************************************************************
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
@@ -75,24 +74,25 @@ from wallaby2caom2 import storage_name as sn
 def test_storage_name(test_config):
     target_name = 'NGC_4808_TR1'
     test_f_names = {
-        'WALLABY_J124915+043926_NGC_4808_High-Res_Kin_TR1_FullResProcData.fits': 'kinematic_model_highres',
-        'WALLABY_J124915+043926_NGC_4808_High-Res_TR1_spec.fits': 'source_data_highres',
-        'WALLABY_J124915+043926_NGC_4808_Kin_TR1_FullResProcData.fits': 'kinematic_model',
-        'WALLABY_J124915+043926_NGC_4808_TR1_spec.fits': 'source_data',
+        'WALLABY_J124915+043926_NGC_4808_High-Res_Kin_TR1_FullResProcData.fits':
+            'WALLABY_J124915+043926_NGC_4808_High-Res_Kin_TR1_FullResProcData',
+        'WALLABY_J124915+043926_NGC_4808_High-Res_TR1_spec.fits':
+            'WALLABY_J124915+043926_NGC_4808_High-Res_TR1_spec',
+        'WALLABY_J124915+043926_NGC_4808_Kin_TR1_FullResProcData.fits': 'kinematic_model_NGC_4808_TR1',
+        'WALLABY_J124915+043926_NGC_4808_TR1_spec.fits': 'source_data_NGC_4808_TR1',
     }
-    for test_f_name, product_id_prefix in test_f_names.items():
+    for test_f_name, expected_product_id in test_f_names.items():
         test_url = (
             f'vos:cirada/emission/PilotFieldReleases_Jun2021/'
             f'KinematicModels/Wallaby_Hydra_DR2_KinematicModels_v2/'
             f'WALLABY_J100342-270137/{test_f_name}'
         )
         expected_obs_id = 'WALLABY_J124915+043926'
-        expected_product_id = f'{product_id_prefix}_{target_name}'
         expected_fid = basename(test_url).replace('.fits', '')
         for ii in [test_url, test_f_name]:
             ts = sn.WallabyName(ii)
             assert ts.obs_id == expected_obs_id, 'wrong obs id'
-            assert ts.product_id == expected_product_id, 'wrong product id'
+            assert ts.product_id == expected_product_id, f'wrong product id {ts.product_id} {test_f_name}'
             assert ts.file_name == basename(test_url), 'wrong fname'
             assert ts.file_id == expected_fid, 'wrong fid'
             assert (
