@@ -143,12 +143,12 @@ def test_run_use_local_files(
         assert test_result is not None, 'expect result'
         assert test_result == 0, 'expect success'
         assert meta_visit_mock.called, '_visit_meta call'
-        # 16 == number of test files
-        assert meta_visit_mock.call_count == 16, '_visit_meta call count'
+        # 13 == number of test files
+        assert meta_visit_mock.call_count == 13, '_visit_meta call count'
         assert caom2_read_mock.called, '_caom2_store call'
-        assert caom2_read_mock.call_count == 16, '_caom2_store call count'
+        assert caom2_read_mock.call_count == 13, '_caom2_store call count'
         assert caom2_store_mock.called, '_caom2_store call'
-        assert caom2_store_mock.call_count == 16, '_caom2_store call count'
+        assert caom2_store_mock.call_count == 13, '_caom2_store call count'
     finally:
         os.chdir(cwd)
 
