@@ -75,9 +75,8 @@ def test_storage_name(test_config):
     target_name = 'NGC_4808_TR1'
     test_f_names = {
         'WALLABY_J124915+043926_NGC_4808_High-Res_Kin_TR1_FullResProcData.fits':
-            'WALLABY_J124915+043926_NGC_4808_High-Res_Kin_TR1_FullResProcData',
-        'WALLABY_J124915+043926_NGC_4808_High-Res_TR1_spec.fits':
-            'WALLABY_J124915+043926_NGC_4808_High-Res_TR1_spec',
+            'kinematic_model_NGC_4808_High-Res_Kin_TR1',
+        'WALLABY_J124915+043926_NGC_4808_High-Res_TR1_spec.fits': 'source_data_NGC_4808_High-Res_TR1',
         'WALLABY_J124915+043926_NGC_4808_Kin_TR1_FullResProcData.fits': 'kinematic_model_NGC_4808_TR1',
         'WALLABY_J124915+043926_NGC_4808_TR1_spec.fits': 'source_data_NGC_4808_TR1',
     }
@@ -113,3 +112,98 @@ def test_preview(test_config):
     test_f_name = 'WALLABY_J124915+043926_NGC_4808_High-Res_Kin_TR1_DiagnosticPlot.png'
     ts = sn.WallabyName(test_f_name)
     assert ts.thumb == test_f_name.replace('.png', '') + '_prev_256.png'
+
+
+def test_product_ids(test_config):
+    x = {
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_Kin_TR1_DiagnosticPlot.png": 'kinematic_model_Vela_High-Res_Kin_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_Kin_TR1_DiagnosticPlot_prev_256.png": 'kinematic_model_Vela_High-Res_Kin_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_Kin_TR1_DiffCube.fits": 'kinematic_model_Vela_High-Res_Kin_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_Kin_TR1_FullResModCube.fits": 'kinematic_model_Vela_High-Res_Kin_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_Kin_TR1_FullResProcData.fits": 'kinematic_model_Vela_High-Res_Kin_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_Kin_TR1_ModCube.fits": 'kinematic_model_Vela_High-Res_Kin_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_Kin_TR1_ModGeometry.fits": 'kinematic_model_Vela_High-Res_Kin_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_Kin_TR1_ModRotCurve.fits": 'kinematic_model_Vela_High-Res_Kin_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_Kin_TR1_ModSurfDens.fits": 'kinematic_model_Vela_High-Res_Kin_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_Kin_TR1_ProcData.fits": 'kinematic_model_Vela_High-Res_Kin_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_TR1_chan.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_TR1_cube.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_TR1_mask.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_TR1_mom0.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_TR1_mom0.png": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_TR1_mom0_prev_256.png": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_TR1_mom1.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_TR1_mom2.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_TR1_snr.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_High-Res_TR1_spec.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_AvgMod.txt": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_BaroloInput.txt": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_BaroloMod.txt": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_BaroloSurfDens.txt": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_DiagnosticPlot.png": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_DiagnosticPlot_prev_256.png": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_DiffCube.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_FATInput.txt": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_FATMod.txt": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_FullResModCube.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_FullResProcData.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_ModCube.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_ModGeometry.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_ModRotCurve.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_ModSurfDens.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_Kin_TR1_ProcData.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_TR1_chan.fits": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_TR1_cube.fits": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_TR1_mask.fits": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_TR1_mom0.fits": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_TR1_mom0.png": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_TR1_mom0_prev_256.png": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_TR1_mom1.fits": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_TR1_mom2.fits": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100656-450242_Vela_TR1_spec.fits": 'source_data_Vela_TR1',
+    }
+
+    y = {
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_High-Res_TR1_chan.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_High-Res_TR1_cube.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_High-Res_TR1_mask.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_High-Res_TR1_mom0.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_High-Res_TR1_mom0.png": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_High-Res_TR1_mom0_prev_256.png": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_High-Res_TR1_mom1.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_High-Res_TR1_mom2.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_High-Res_TR1_spec.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_High-Res_TR1_snr.fits": 'source_data_Vela_High-Res_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_AvgMod.txt": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_BaroloInput.txt": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_BaroloMod.txt": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_BaroloSurfDens.txt": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_DiagnosticPlot.png": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_DiagnosticPlot_prev_256.png": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_DiffCube.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_FATInput.txt": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_FATMod.txt": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_FullResModCube.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_FullResProcData.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_ModCube.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_ModGeometry.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_ModRotCurve.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_ModSurfDens.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_Kin_TR1_ProcData.fits": 'kinematic_model_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_TR1_chan.fits": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_TR1_cube.fits": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_TR1_mask.fits": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_TR1_mom0.fits": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_TR1_mom0.png": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_TR1_mom0_prev_256.png": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_TR1_mom1.fits": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_TR1_mom2.fits": 'source_data_Vela_TR1',
+        "cadc:WALLABY/WALLABY_J100123-434533_Vela_TR1_spec.fits": 'source_data_Vela_TR1',
+    }
+
+    for entry in [x, y]:
+        for uri, product_id in entry.items():
+            test_storage_name = sn.WallabyName(uri)
+            assert (
+                test_storage_name.product_id == product_id
+            ), f'{uri}\nactual\n{test_storage_name.product_id}\nexpected\n{product_id}'
