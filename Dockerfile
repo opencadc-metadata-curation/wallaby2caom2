@@ -21,7 +21,7 @@ RUN git clone https://github.com/${OPENCADC_REPO}/caom2tools.git && \
     cd ..
 
 RUN pip install git+https://github.com/${OPENCADC_REPO}/caom2pipe@${OPENCADC_BRANCH}#egg=caom2pipe
-  
+
 RUN pip install git+https://github.com/${OPENCADC_REPO}/wallaby2caom2@${OPENCADC_BRANCH}#egg=wallaby2caom2
 
 FROM python:${OPENCADC_PYTHON_VERSION}-slim

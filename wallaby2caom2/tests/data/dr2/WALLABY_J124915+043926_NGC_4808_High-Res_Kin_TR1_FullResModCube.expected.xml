@@ -22,7 +22,7 @@
   </caom2:instrument>
   <caom2:planes>
     <caom2:plane caom2:id="ec794da0-d133-4875-8ac1-ed3c23506253">
-      <caom2:productID>WALLABY_J124915+043926_NGC_4808_High-Res_Kin_TR1_FullResModCube</caom2:productID>
+      <caom2:productID>kinematic_model_NGC_4808_High-Res_Kin_TR1</caom2:productID>
       <caom2:metaRelease>2026-01-01T00:00:00.000</caom2:metaRelease>
       <caom2:dataRelease>2026-01-01T00:00:00.000</caom2:dataRelease>
       <caom2:dataProductType>cube</caom2:dataProductType>

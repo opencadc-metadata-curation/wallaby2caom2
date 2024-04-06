@@ -1,0 +1,42 @@
+SIMPLE  =                    T / file does conform to FITS standard             
+BITPIX  =                  -32 / number of bits per data pixel                  
+NAXIS   =                    3 / number of data axes                            
+NAXIS1  =                   94 / length of data axis 1                          
+NAXIS2  =                   81 / length of data axis 2                          
+NAXIS3  =                   28 / length of data axis 3                          
+EXTEND  =                    T / FITS dataset may contain extensions            
+COMMENT   FITS (Flexible Image Transport System) format is defined in 'Astronomy
+COMMENT   and Astrophysics', volume 376, page 359; bibcode: 2001A&A...376..359H 
+CRPIX1  =     4.7000000000E+01 /                                                
+CRVAL1  =     1.5092822166E+02 /                                                
+CDELT1  =    -1.6666666667E-03 /                                                
+CTYPE1  = 'RA---SIN'           /                                                
+CUNIT1  = 'DEGREE  '           /                                                
+CRPIX2  =     4.0000000000E+01 /                                                
+CRVAL2  =    -2.7023428701E+01 /                                                
+CDELT2  =     1.6666666667E-03 /                                                
+CTYPE2  = 'DEC--SIN'           /                                                
+CUNIT2  = 'DEGREE  '           /                                                
+CRPIX3  =     1.4000000000E+01 /                                                
+CRVAL3  =     9.5637546569E+05 /                                                
+CDELT3  =    -1.1800395508E+04 /                                                
+CTYPE3  = 'VELOHEL '           /                                                
+CUNIT3  = 'm/s     '           /                                                
+BUNIT   = 'Jy/beam '           /                                                
+BMAJ    =     8.3615406840E-03 /                                                
+BMIN    =     8.3537436948E-03 /                                                
+BPA     =     1.2319045687E+01 /                                                
+FREQ0   =     1.4204057518E+09 /                                                
+DATAMAX =     4.2170867324E-02 /                                                
+DATAMIN =    -8.3485813811E-03 /                                                
+ORIGIN  = 'SoFiA 2.2.1'                                                         
+RESTFRQ =    1.42040575179E+09                                                  
+SPECSYS = 'BARYCENT'                                                            
+EQUINOX =    2.00000000000E+03                                                  
+RADESYS = 'FK5     '                                                            
+LONPOLE =    1.80000000000E+02                                                  
+LATPOLE =   -2.73743805556E+01                                                  
+HISTORY BBAROLO SPECTRAL SMOOTHING: HANNING window of size 3 channels           
+HISTORY BBAROLO SPECTRAL AVERAGING:   New channel width: -11800.395508 m/s      
+HISTORY BBAROLO SPECTRAL AVERAGING:   Old channel width: -3933.465327 m/s       
+END                                                                             
