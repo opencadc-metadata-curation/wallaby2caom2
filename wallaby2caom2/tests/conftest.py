@@ -70,25 +70,9 @@ from os.path import dirname, join, realpath
 from caom2pipe.manage_composable import Config, StorageName
 import pytest
 
-<<<<<<<< HEAD:wallaby2caom2/tests/conftest.py
 COLLECTION = 'WALLABY'
 SCHEME = 'cadc'
 PREVIEW_SCHEME = 'cirada'
-========
-from mock import Mock, patch
-
-from caom2 import Status
-from caom2pipe import manage_composable as mc
-
-from wallaby2caom2 import time_bounds_augmentation, quality_augmentation
-from wallaby2caom2 import position_bounds_augmentation, scrape
-from wallaby2caom2 import storage_name as sn
-
-THIS_DIR = os.path.dirname(os.path.realpath(__file__))
-TEST_DATA_DIR = os.path.join(THIS_DIR, 'data')
-TEST_URI = 'ad:VLASS/VLASS1.1.ql.T01t01.J000228-363000.10.2048.v1.I.iter1.' \
-           'image.pbcor.tt0.rms.subim.fits'
->>>>>>>> main:wallaby2caom2/tests/test_vlass_visitors.py
 
 
 @pytest.fixture()
