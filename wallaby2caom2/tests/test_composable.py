@@ -67,6 +67,7 @@
 #
 
 import os
+import pytest
 
 from cadcdata import FileInfo
 from collections import deque
