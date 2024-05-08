@@ -8,13 +8,13 @@ In an empty directory:
 1. This is the working directory, so it should probably have some space.
 
 1. In the `main` branch of this repository, find the file `Dockerfile`. In the
-`scripts` directory, find the files
+`scripts` and `config` directories respectively, find the files
 `docker-entrypoint.sh`, and `config.yml`. Copy these files to the working directory.
 
    ```
    wget https://raw.github.com/opencadc/wallaby2caom2/main/Dockerfile
    wget https://raw.github.com/opencadc/wallaby2caom2/main/scripts/docker-entrypoint.sh
-   wget https://raw.github.com/opencadc/wallaby2caom2/main/scripts/config.yml
+   wget https://raw.github.com/opencadc/wallaby2caom2/main/config/config.yml
    ```
 
 1. Make `docker-entrypoint.sh` executable.
