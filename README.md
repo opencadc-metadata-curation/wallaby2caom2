@@ -12,9 +12,9 @@ In an empty directory:
 `docker-entrypoint.sh`, and `config.yml`. Copy these files to the working directory.
 
    ```
-   wget https://raw.github.com/opencadc/wallaby2caom2/main/Dockerfile
-   wget https://raw.github.com/opencadc/wallaby2caom2/main/scripts/docker-entrypoint.sh
-   wget https://raw.github.com/opencadc/wallaby2caom2/main/config/config.yml
+   wget https://raw.github.com/opencadc-metadata-curation/wallaby2caom2/main/Dockerfile
+   wget https://raw.github.com/opencadc-metadata-curation/wallaby2caom2/main/scripts/docker-entrypoint.sh
+   wget https://raw.github.com/opencadc-metadata-curation/wallaby2caom2/main/config/config.yml
    ```
 
 1. Make `docker-entrypoint.sh` executable.
@@ -68,7 +68,7 @@ proxy certificate as follows. You will be prompted for the password for your CAD
 1. To edit and test the application from inside a container:
 
    ```
-   user@dockerhost:<cwd># git clone https://github.com/opencadc/wallaby2caom2.git
+   user@dockerhost:<cwd># git clone https://github.com/opencadc-metadata-curation/wallaby2caom2.git
    user@dockerhost:<cwd># docker run --rm -ti -v <cwd>:/usr/src/app --user $(id -u):$(id -g) -e HOME=/usr/src/app --name wallaby_run_cli wallaby_run_cli /bin/bash
    root@53bef30d8af3:/usr/src/app# pip install -e ./wallaby2caom2
    root@53bef30d8af3:/usr/src/app# pip install mock pytest
