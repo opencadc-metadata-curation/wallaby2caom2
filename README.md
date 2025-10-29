@@ -22,7 +22,7 @@ In an empty directory:
 1. `config.yml` is configuration information for the ingestion. It will work with
 the files named and described here. For a complete description of its
 content, see
-https://github.com/opencadc/collection2caom2/wiki/config.yml.
+https://github.com/opencadc-metadata-curation/collection2caom2/wiki/config.yml.
 
 1. The ways to tell this tool the work to be done:
 
@@ -77,5 +77,5 @@ proxy certificate as follows. You will be prompted for the password for your CAD
    ```
 
 1. For some instructions that might be helpful on using containers, see:
-https://github.com/opencadc/collection2caom2/wiki/Docker-and-Collections
+https://github.com/opencadc-metadata-curation/collection2caom2/wiki/Docker-and-Collections
 
