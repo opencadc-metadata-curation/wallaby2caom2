@@ -10,7 +10,7 @@ RUN apt-get update --no-install-recommends && apt-get dist-upgrade -y && \
     rm -rf /var/lib/apt/lists/ /tmp/* /var/tmp/*
 
 ARG OPENCADC_BRANCH=main
-ARG OPENCADC_REPO=opencadc
+ARG OPENCADC_REPO=opencadc-metadata-curation
 
 WORKDIR /usr/src/app
 
